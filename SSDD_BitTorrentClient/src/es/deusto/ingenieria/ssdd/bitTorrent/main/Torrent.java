@@ -59,7 +59,7 @@ public class Torrent {
 		return handler.getMetainfo();
 	}
 	public void httprRequest(String urlText, MetainfoFile<?> metainf) throws IOException{
-		urlText="http://10.172.203.192:48643/announce?info_hash="+metainf.getInfo().getUrlInfoHash()+"&peer_id="+this.peerId+"&port=8080&uploaded=0&downloaded=0&left=16384&event=started";
+		urlText="http://10.172.203.192:48643/announce?info_hash="+metainf.getInfo().getUrlInfoHash()+"&peer_id="+this.peerId+"&port=3333&uploaded=0&downloaded=0&left=16384&event=started";
 		System.out.println(urlText);
 		//urlText="http://google.com";
 		String USER_AGENT = "Mozilla/5.0"; 
