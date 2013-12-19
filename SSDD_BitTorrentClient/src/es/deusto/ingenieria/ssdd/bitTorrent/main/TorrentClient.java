@@ -20,14 +20,14 @@ import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 public class TorrentClient {
 	private String peerId;
 	private int port;
-	private ArrayList<PeerState> peerStateList;
+	private PeerStateList peerStateList;
 	private int interval;
 	private MetainfoFile<?> metainf;
 
 	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 8888;
-		this.peerStateList= new ArrayList<PeerState>();
+		this.peerStateList= new PeerStateList();
 		this.interval=0;
 		this.metainf=null;
 	}

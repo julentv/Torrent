@@ -25,10 +25,10 @@ public class MetainfoStringHandler {
 	public ArrayList<HashMap<String, String>> getPeers() {
 		return peers;
 	}
-	public ArrayList<PeerState> getPeerStateArray(int numberOfPieces){
-		ArrayList<PeerState> peerStateArray= new ArrayList<PeerState>();
-		for(HashMap<String, String> peer:peers){
-			PeerState peerState= new PeerState(peer.get("ip"), Integer.parseInt(peer.get("port")), numberOfPieces);
+	public PeerStateList getPeerStateArray(int numberOfPieces){
+		PeerStateList peerStateArray= new PeerStateList();
+		for(HashMap peer:peers){
+			PeerState peerState= new PeerState(((String)peer.get("ip")), (int) (peer.get("port")), numberOfPieces);
 			peerStateArray.add(peerState);
 		}
 		return peerStateArray;

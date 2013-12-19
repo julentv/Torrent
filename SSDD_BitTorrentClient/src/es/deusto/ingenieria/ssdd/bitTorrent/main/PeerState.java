@@ -86,5 +86,12 @@ public class PeerState {
 	public byte getBitfieldPosition(int position){
 		return this.bitfield[position];
 	}
+	public boolean equals(PeerState peerState){
+		if(this.ip.equals(peerState.getIp())&&this.port==peerState.getPort()){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 }
