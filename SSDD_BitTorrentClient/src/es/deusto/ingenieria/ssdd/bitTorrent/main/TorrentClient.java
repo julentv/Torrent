@@ -35,7 +35,7 @@ public class TorrentClient {
 		return this.metainf.getInfo().getLength()/this.metainf.getInfo().getPieceLength();
 	}
 	
-	public void dowloadTorrent(String torrentName) throws IOException {
+	public void downloadTorrent(String torrentName) throws IOException {
 		TorrentClient torrent = new TorrentClient();
 		this.metainf = torrent.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());

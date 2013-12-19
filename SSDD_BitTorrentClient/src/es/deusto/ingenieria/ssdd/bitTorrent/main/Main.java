@@ -13,7 +13,7 @@ public class Main {
 		// String torrentFileName = reader.readLine();
 		String torrentFileName = "SAN IGNACIO.docx.torrent";
 		TorrentClient torrent = new TorrentClient();
-		torrent.dowloadTorrent(torrentFileName);
+		torrent.downloadTorrent(torrentFileName);
 
 	}
 
