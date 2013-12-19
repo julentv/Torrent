@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 public class Handsake {	
 	private static final String DEFAULT_PROTOCOL = "BitTorrent protocol";
 	private static final String RESERVED = "00000000";
+	private static final byte[] RESERVED_2 = new byte[8];
 	
 	private int nameLength;
 	private String protocolName;
@@ -66,7 +67,8 @@ public class Handsake {
 
 			result.write(this.nameLength);
 			result.write(this.protocolName.getBytes());
-			result.write(this.reserved.getBytes());
+			//result.write(this.reserved.getBytes());
+			result.write(RESERVED_2);
 			result.write(this.infoHash.getBytes());
 			result.write(this.peerId.getBytes());
 			

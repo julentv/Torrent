@@ -25,8 +25,8 @@ public class MetainfoStringHandler {
 	public ArrayList<HashMap<String, String>> getPeers() {
 		return peers;
 	}
-	public PeerStateList getPeerStateArray(int numberOfPieces){
-		PeerStateList peerStateArray= new PeerStateList();
+	public PeerStateList getPeerStateArray(int numberOfPieces, PeerState myself){
+		PeerStateList peerStateArray= new PeerStateList(myself);
 		for(HashMap peer:peers){
 			PeerState peerState= new PeerState(((String)peer.get("ip")), (int) (peer.get("port")), numberOfPieces);
 			peerStateArray.add(peerState);

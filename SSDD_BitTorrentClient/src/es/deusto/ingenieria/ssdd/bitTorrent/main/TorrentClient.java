@@ -1,24 +1,31 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
+import java.awt.TrayIcon.MessageType;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
-import java.util.ArrayList;
+import java.net.UnknownHostException;
 import java.util.List;
+
+import com.sun.corba.se.impl.ior.ByteBuffer;
 
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.MetainfoFile;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MetainfoFileHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MultipleFileHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.SingleFileHandler;
+import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.Handsake;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
 public class TorrentClient {
 	private String peerId;
+	private String ip;
 	private int port;
 	private PeerStateList peerStateList;
 	private int interval;
@@ -27,7 +34,8 @@ public class TorrentClient {
 	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 8888;
-		this.peerStateList= new PeerStateList();
+		this.ip="10.172.203.192";
+		this.peerStateList= new PeerStateList(new PeerState(this.ip, this.port, 0));
 		this.interval=0;
 		this.metainf=null;
 	}
@@ -39,16 +47,16 @@ public class TorrentClient {
 		TorrentClient torrent = new TorrentClient();
 		this.metainf = torrent.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
-		String trackerResponse=httprRequest(metainf,333, 0,0,62113);
+		String trackerResponse=httprRequest(metainf,this.port, 0,0,62113);
 		if(trackerResponse!=null){
-			MetainfoFile<?> trackerMetainf;
 			try{
 				//Parse the response
 				MetainfoStringHandler mih= new MetainfoStringHandler(trackerResponse);
 				//Set the local values with the received information
 				this.interval=mih.getInterval();
-				this.peerStateList=mih.getPeerStateArray(this.getNumberOfPieces());
-				
+				this.peerStateList=mih.getPeerStateArray(this.getNumberOfPieces(),new PeerState(this.ip, this.port, 0));
+				//connect to one peer				
+				handShakeToPeer(this.peerStateList.get(0), new Handsake(this.metainf.getInfo().getHexInfoHash(), this.peerId));				
 			}catch(Exception e){
 				System.out.println("Can't parse the tracker response");
 				e.printStackTrace();
@@ -57,6 +65,31 @@ public class TorrentClient {
 		}else{
 			System.out.println("Can't connect to any tracker");
 		}
+	}
+	public void handShakeToPeer(PeerState peerState, Handsake message){
+		try (Socket tcpSocket = new Socket(peerState.getIp(), peerState.getPort());
+			    DataInputStream in = new DataInputStream(tcpSocket.getInputStream());
+				DataOutputStream out = new DataOutputStream(tcpSocket.getOutputStream())){
+				String messageToSend=message.toString();
+				//out.write(message.getBytes());
+				out.writeUTF(messageToSend);
+				System.out.println(" - Sent data to '" + tcpSocket.getInetAddress().getHostAddress() + ":" + tcpSocket.getPort() + 
+                        "' -> '" + message + "'");
+				System.out.println("Waiting for the answer.");
+				//byte[]bytesResponse= new byte[1024];				
+				//in.read(bytesResponse);
+				String data=in.readUTF();
+				System.out.println(" - Received data from the peer -> '" + data + "'");
+			} catch (UnknownHostException e) {
+				System.err.println("# TCPClient Socket error: " + e.getMessage());
+				e.printStackTrace();
+			} catch (EOFException e) {
+				System.err.println("# TCPClient EOF error: " + e.getMessage());
+				e.printStackTrace();
+			} catch (IOException e) {
+				System.err.println("# TCPClient IO error: " + e.getMessage());
+				e.printStackTrace();
+			}
 	}
 	
 	/**

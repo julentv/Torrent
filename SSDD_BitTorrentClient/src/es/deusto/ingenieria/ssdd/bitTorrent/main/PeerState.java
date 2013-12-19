@@ -1,6 +1,5 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
-import java.util.ArrayList;
 
 public class PeerState {
 	private String ip;
