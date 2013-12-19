@@ -20,9 +20,9 @@ public class Handsake {
 	
 	//Constructor con todos los parámetros
 	public Handsake(String infoHash, String peerId){
-		Handsake handsake= new Handsake();
-		handsake.setInfoHash(infoHash);
-		handsake.setPeerId(peerId);
+		this();
+		this.setInfoHash(infoHash);
+		this.setPeerId(peerId);
 		
 		
 	}
@@ -79,5 +79,34 @@ public class Handsake {
 		
 	public String toString() {
 		return new String(this.getBytes());
+	}
+	
+	/**
+	 * Método que parsea el string recibido del handsake a un objeto de tipo Handsake
+	 * @param stringHandsake string recibido como hansake del peer
+	 * @return handsake un objeto de tipo Handsake con los correspondientes atributos
+	 */
+	public static Handsake parseStringToHandsake(String stringHandsake){
+		String protocolName= stringHandsake.substring(1,20);
+		String infoHash= stringHandsake.substring(28,48);
+		String peerId= stringHandsake.substring(48);
+		Handsake handsake = new Handsake(infoHash, peerId);
+		handsake.setProtocolName(protocolName);
+		
+		return handsake;
+	}
+	/**
+	 * Método que comprueba que el handsake es válido
+	 * @param handsake recibido por el peer
+	 * @param infoHash del torrent que tengo
+	 * @return isValid: booleano que devuelve true si el handsake es correcto y false si no lo es
+	 */
+	public static boolean isValidHandsakeForBitTorrentProtocol(Handsake handsake,  String infoHash){
+		boolean isValid=false;
+		if(handsake.getProtocolName().equals(DEFAULT_PROTOCOL)&&handsake.getInfoHash().equals(infoHash)){
+			isValid=true;
+		}
+		
+		return isValid;
 	}
 }
