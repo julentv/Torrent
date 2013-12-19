@@ -18,6 +18,15 @@ public class Handsake {
 		this.reserved = Handsake.RESERVED;
 	}
 	
+	//Constructor con todos los parámetros
+	public Handsake(String infoHash, String peerId){
+		Handsake handsake= new Handsake();
+		handsake.setInfoHash(infoHash);
+		handsake.setPeerId(peerId);
+		
+		
+	}
+	
 	public int getNameLength() {
 		return nameLength;
 	}
