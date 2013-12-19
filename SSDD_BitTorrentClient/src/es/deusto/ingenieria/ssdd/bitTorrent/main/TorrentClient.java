@@ -17,28 +17,37 @@ import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MultipleFileHandler
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.SingleFileHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
-public class Torrent {
+public class TorrentClient {
 	private String peerId;
 	private int port;
 	private ArrayList<PeerState> peerStateList;
 	private int interval;
+	private MetainfoFile<?> metainf;
 
-	public Torrent() {
+	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 8888;
 		this.peerStateList= new ArrayList<PeerState>();
 		this.interval=0;
+		this.metainf=null;
 	}
-
+	public int getNumberOfPieces(){
+		return this.metainf.getInfo().getLength()/this.metainf.getInfo().getPieceLength();
+	}
+	
 	public void dowloadTorrent(String torrentName) throws IOException {
-		Torrent torrent = new Torrent();
-		MetainfoFile<?> metainf = torrent.obtainMetaInfo(torrentName);
+		TorrentClient torrent = new TorrentClient();
+		this.metainf = torrent.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
 		String trackerResponse=httprRequest(metainf,333, 0,0,62113);
 		if(trackerResponse!=null){
 			MetainfoFile<?> trackerMetainf;
 			try{
+				//Parse the response
 				MetainfoStringHandler mih= new MetainfoStringHandler(trackerResponse);
+				//Set the local values with the received information
+				this.interval=mih.getInterval();
+				this.peerStateList=mih.getPeerStateArray(this.getNumberOfPieces());
 				
 			}catch(Exception e){
 				System.out.println("Can't parse the tracker response");
@@ -49,18 +58,7 @@ public class Torrent {
 			System.out.println("Can't connect to any tracker");
 		}
 	}
-
-	public static void main(String[] args) throws IOException {
-		System.out.print("Insert the name of the torrent: ");
-		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				System.in));
-		// String torrentFileName = reader.readLine();
-		String torrentFileName = "SAN IGNACIO.docx.torrent";
-		Torrent torrent = new Torrent();
-		torrent.dowloadTorrent(torrentFileName);
-
-	}
-
+	
 	/**
 	 * Extraer a partir de un torrent file la Metainfo
 	 * 
