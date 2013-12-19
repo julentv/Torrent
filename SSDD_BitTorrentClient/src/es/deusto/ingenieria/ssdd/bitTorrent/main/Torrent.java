@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.MetainfoFile;
@@ -19,10 +20,14 @@ import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 public class Torrent {
 	private String peerId;
 	private int port;
+	private ArrayList<PeerState> peerStateList;
+	private int interval;
 
 	public Torrent() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 8888;
+		this.peerStateList= new ArrayList<PeerState>();
+		this.interval=0;
 	}
 
 	public void dowloadTorrent(String torrentName) throws IOException {
