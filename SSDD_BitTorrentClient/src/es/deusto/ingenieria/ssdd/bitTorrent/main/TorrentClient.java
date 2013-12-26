@@ -12,6 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.corba.se.impl.ior.ByteBuffer;
@@ -31,69 +32,101 @@ public class TorrentClient {
 	private int interval;
 	private MetainfoFile<?> metainf;
 
+	/***********************Sincronizarlos**********************/
+	//si es -1 ha acabado ya
+	private int currentFragment;
+	private byte[][]downloadingFragments;
+	private int fragmentLength;
+	/***************************************************************/
+
+	
 	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 8888;
-		this.ip="127.0.0.1";
-		this.peerStateList= new PeerStateList(new PeerState(this.ip, this.port, 0));
-		this.interval=0;
-		this.metainf=null;
-	}
-	public int getNumberOfPieces(){
-		return this.metainf.getInfo().getLength()/this.metainf.getInfo().getPieceLength();
+		this.ip = "127.0.0.1";
+		this.peerStateList = new PeerStateList(new PeerState(this.ip,
+				this.port, 0));
+		this.interval = 0;
+		this.metainf = null;
 	}
 	
+	public int getCurrentFragment() {
+		return currentFragment;
+	}
+
+
+	public int getNumberOfPieces() {
+		return this.metainf.getInfo().getLength()
+				/ this.metainf.getInfo().getPieceLength();
+	}
+
 	public void downloadTorrent(String torrentName) throws IOException {
 		TorrentClient torrent = new TorrentClient();
 		this.metainf = torrent.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
-		String trackerResponse=httprRequest(metainf,this.port, 0,0,62113);
-		if(trackerResponse!=null){
-			try{
-				//Parse the response
-				MetainfoStringHandler mih= new MetainfoStringHandler(trackerResponse);
-				//Set the local values with the received information
-				this.interval=mih.getInterval();
-				this.peerStateList=mih.getPeerStateArray(this.getNumberOfPieces(),new PeerState(this.ip, this.port, 0));
-				//connect to one peer
-				System.out.println("Bytes:  "+new String(this.metainf.getInfo().getInfoHash()).getBytes().length);
+		String trackerResponse = httprRequest(metainf, this.port, 0, 0, 62113);
+		if (trackerResponse != null) {
+			try {
+				// Parse the response
+				MetainfoStringHandler mih = new MetainfoStringHandler(
+						trackerResponse);
+				// Set the local values with the received information
+				this.interval = mih.getInterval();
+				this.peerStateList = mih.getPeerStateArray(this
+						.getNumberOfPieces(), new PeerState(this.ip, this.port,
+						0));
+				// connect to one peer
+				System.out.println("Bytes:  "
+						+ new String(this.metainf.getInfo().getInfoHash())
+								.getBytes().length);
 				peerStateList.toString();
-				handShakeToPeer(this.peerStateList.get(0), new Handsake(new String(this.metainf.getInfo().getInfoHash()), this.peerId));				
-			}catch(Exception e){
+				handShakeToPeer(this.peerStateList.get(0), new Handsake(
+						new String(this.metainf.getInfo().getInfoHash()),
+						this.peerId));
+			} catch (Exception e) {
 				System.out.println("Can't parse the tracker response");
 				e.printStackTrace();
 			}
-			
-		}else{
+
+		} else {
 			System.out.println("Can't connect to any tracker");
 		}
 	}
-	public void handShakeToPeer(PeerState peerState, Handsake message){
-		try (Socket tcpSocket = new Socket(peerState.getIp(), peerState.getPort());
-			    DataInputStream in = new DataInputStream(tcpSocket.getInputStream());
-				DataOutputStream out = new DataOutputStream(tcpSocket.getOutputStream())){
-				String messageToSend=message.toString();
-				out.write(message.getBytes());
-				//out.writeUTF(messageToSend);
-				System.out.println(" - Sent data to '" + tcpSocket.getInetAddress().getHostAddress() + ":" + tcpSocket.getPort() + 
-                        "' -> '" + message + "'");
-				System.out.println("Waiting for the answer.");
-				byte[]bytesResponse= new byte[300];				
-				int num=in.read(bytesResponse);
-				//String data=in.readUTF();
-				System.out.println(" - Received data from the peer ("+num+") -> '" + new String(bytesResponse) + "'");
-			} catch (UnknownHostException e) {
-				System.err.println("# TCPClient Socket error: " + e.getMessage());
-				e.printStackTrace();
-			} catch (EOFException e) {
-				System.err.println("# TCPClient EOF error: " + e.getMessage());
-				e.printStackTrace();
-			} catch (IOException e) {
-				System.err.println("# TCPClient IO error: " + e.getMessage());
-				e.printStackTrace();
-			}
+
+	public void handShakeToPeer(PeerState peerState, Handsake message) {
+		try (Socket tcpSocket = new Socket(peerState.getIp(),
+				peerState.getPort());
+				DataInputStream in = new DataInputStream(
+						tcpSocket.getInputStream());
+				DataOutputStream out = new DataOutputStream(
+						tcpSocket.getOutputStream())) {
+			out.write(message.getBytes());
+			// out.writeUTF(messageToSend);
+			System.out.println(" - Sent data to '"
+					+ tcpSocket.getInetAddress().getHostAddress() + ":"
+					+ tcpSocket.getPort() + "' -> '" + message + "'");
+			System.out.println("Waiting for the answer.");
+			byte[] bytesHandshake = new byte[68];
+			int num = in.read(bytesHandshake);
+			// String data=in.readUTF();
+			System.out.println(" - Received data from the peer (" + num
+					+ ") -> '" + new String(bytesHandshake) + "'");
+			byte[] lastBytes = new byte[in.available()];
+			in.read(lastBytes);
+			System.out.println("Resto de bytes: '" + new String(lastBytes)
+					+ "'");
+		} catch (UnknownHostException e) {
+			System.err.println("# TCPClient Socket error: " + e.getMessage());
+			e.printStackTrace();
+		} catch (EOFException e) {
+			System.err.println("# TCPClient EOF error: " + e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("# TCPClient IO error: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
-	
+
 	/**
 	 * Extraer a partir de un torrent file la Metainfo
 	 * 
@@ -116,8 +149,10 @@ public class TorrentClient {
 	}
 
 	/**
-	 * Crea la conexion al tracker y devuelve la respuesta de este. Intenta conectarse a todos
-	 * los trackers obtenidos del torrent hasta que la conexion se realice.
+	 * Crea la conexion al tracker y devuelve la respuesta de este. Intenta
+	 * conectarse a todos los trackers obtenidos del torrent hasta que la
+	 * conexion se realice.
+	 * 
 	 * @param metainf
 	 * @param port
 	 * @param uploaded
@@ -126,25 +161,20 @@ public class TorrentClient {
 	 * @return
 	 * @throws IOException
 	 */
-	public String httprRequest(MetainfoFile<?> metainf, int port, int uploaded,int downloaded, int left)
-			throws IOException {
+	public String httprRequest(MetainfoFile<?> metainf, int port, int uploaded,
+			int downloaded, int left) throws IOException {
 		List<String> announceList = metainf.getHTTPAnnounceList();
-		String result=null;
-		
-		//Intenta conectarse a todos los trackers, hasta que se conecta a uno
+		String result = null;
+
+		// Intenta conectarse a todos los trackers, hasta que se conecta a uno
 		for (String announce : announceList) {
 			try {
 				System.out.println("Trying to connect to: " + announce);
-				String urlText = announce
-						+ "?info_hash="
-						+ metainf.getInfo().getUrlInfoHash()
-						+ "&peer_id="
-						+ this.peerId
-						+ "&port="+port
-						+"&uploaded="+uploaded
-						+"&downloaded="+downloaded
-						+"&left="+left
-						+"&event=started";
+				String urlText = announce + "?info_hash="
+						+ metainf.getInfo().getUrlInfoHash() + "&peer_id="
+						+ this.peerId + "&port=" + port + "&uploaded="
+						+ uploaded + "&downloaded=" + downloaded + "&left="
+						+ left + "&event=started";
 				// urlText="http://google.com";
 				String USER_AGENT = "Mozilla/5.0";
 				URL obj = new URL(urlText);
@@ -170,11 +200,11 @@ public class TorrentClient {
 				in.close();
 
 				// print result
-				result=response.toString();
+				result = response.toString();
 				System.out.println(response.toString());
 				break;
 			} catch (Exception e) {
-				System.out.println("Connection error to: "+announce);
+				System.out.println("Connection error to: " + announce);
 
 			}
 		}
