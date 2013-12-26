@@ -11,7 +11,7 @@ public class Main {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				System.in));
 		// String torrentFileName = reader.readLine();
-		String torrentFileName = "SAN IGNACIO.docx.torrent";
+		String torrentFileName = "index.txt.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
 

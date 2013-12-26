@@ -34,7 +34,7 @@ public class TorrentClient {
 	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 8888;
-		this.ip="10.172.203.192";
+		this.ip="127.0.0.1";
 		this.peerStateList= new PeerStateList(new PeerState(this.ip, this.port, 0));
 		this.interval=0;
 		this.metainf=null;
@@ -55,8 +55,10 @@ public class TorrentClient {
 				//Set the local values with the received information
 				this.interval=mih.getInterval();
 				this.peerStateList=mih.getPeerStateArray(this.getNumberOfPieces(),new PeerState(this.ip, this.port, 0));
-				//connect to one peer				
-				handShakeToPeer(this.peerStateList.get(0), new Handsake(this.metainf.getInfo().getHexInfoHash(), this.peerId));				
+				//connect to one peer
+				System.out.println("Bytes:  "+new String(this.metainf.getInfo().getInfoHash()).getBytes().length);
+				peerStateList.toString();
+				handShakeToPeer(this.peerStateList.get(0), new Handsake(new String(this.metainf.getInfo().getInfoHash()), this.peerId));				
 			}catch(Exception e){
 				System.out.println("Can't parse the tracker response");
 				e.printStackTrace();
@@ -71,15 +73,15 @@ public class TorrentClient {
 			    DataInputStream in = new DataInputStream(tcpSocket.getInputStream());
 				DataOutputStream out = new DataOutputStream(tcpSocket.getOutputStream())){
 				String messageToSend=message.toString();
-				//out.write(message.getBytes());
-				out.writeUTF(messageToSend);
+				out.write(message.getBytes());
+				//out.writeUTF(messageToSend);
 				System.out.println(" - Sent data to '" + tcpSocket.getInetAddress().getHostAddress() + ":" + tcpSocket.getPort() + 
                         "' -> '" + message + "'");
 				System.out.println("Waiting for the answer.");
-				//byte[]bytesResponse= new byte[1024];				
-				//in.read(bytesResponse);
-				String data=in.readUTF();
-				System.out.println(" - Received data from the peer -> '" + data + "'");
+				byte[]bytesResponse= new byte[300];				
+				int num=in.read(bytesResponse);
+				//String data=in.readUTF();
+				System.out.println(" - Received data from the peer ("+num+") -> '" + new String(bytesResponse) + "'");
 			} catch (UnknownHostException e) {
 				System.err.println("# TCPClient Socket error: " + e.getMessage());
 				e.printStackTrace();

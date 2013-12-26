@@ -6,7 +6,6 @@ public class Handsake {
 	private static final String DEFAULT_PROTOCOL = "BitTorrent protocol";
 	private static final String RESERVED = "00000000";
 	private static final byte[] RESERVED_2 = new byte[8];
-	
 	private int nameLength;
 	private String protocolName;
 	private String reserved;
