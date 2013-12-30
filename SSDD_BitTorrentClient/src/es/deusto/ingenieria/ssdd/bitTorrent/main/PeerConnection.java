@@ -6,9 +6,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.BitfieldMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.CancelMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.ChokeMsg;
@@ -53,13 +53,11 @@ public class PeerConnection extends Thread{
 	}
 
 	private void connectToPeer() {
-		/**
-		 * si devuelve handshake !=null--parsear procesar requesst
-		 */
 		
 		if (handshake()) {
 			//send interested
 			sendInterestedMessage();
+			request();
 		}
 	}
 	
@@ -82,8 +80,8 @@ public class PeerConnection extends Thread{
 	}
 	
 	private void sendInterestedMessage(){
-		byte[] interestedMessage= {0,0,0,1,2};
-		sendMessage(interestedMessage);
+		InterestedMsg interestedMessage= new InterestedMsg();
+		sendMessage(interestedMessage.getBytes());
 	}
 
 	public boolean handshake() {
@@ -152,10 +150,14 @@ public class PeerConnection extends Thread{
 	
 
 	private void request() {
-		// comprobar pperstate contains currentfragment y si el current fragment
+		// comprobar perstate contains current fragment y si el current fragment
 		// es -1 (ha acabao ya)
 		// comprobar siguiente subfragmento a descargar
 		// descargar subfragmento--mandar request
+		byte[]asdasd=ByteBuffer.allocate(4).putInt(32768).array();
+		byte[]length=ByteBuffer.allocate(4).putInt(13).array();
+		RequestMsg requestMessage=new RequestMsg(0, 0, 32768);
+		this.sendMessage(requestMessage.getBytes());
 		// volver a paso 1
 	}
 
