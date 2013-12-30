@@ -1,6 +1,4 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
-
-import java.awt.TrayIcon.MessageType;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,11 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
-
-import com.sun.corba.se.impl.ior.ByteBuffer;
-
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.MetainfoFile;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MetainfoFileHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MultipleFileHandler;

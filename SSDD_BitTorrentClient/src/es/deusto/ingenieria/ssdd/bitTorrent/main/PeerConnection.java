@@ -8,7 +8,7 @@ public class PeerConnection implements Runnable{
 	
 	private void connectToPeer(){
 		/**
-		 * ifsi devuelve handshake !=null--parsear
+		 * si devuelve handshake !=null--parsear
 		 * procesar
 		 * requesst
 		 */
