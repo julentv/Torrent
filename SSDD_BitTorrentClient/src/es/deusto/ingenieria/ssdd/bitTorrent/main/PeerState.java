@@ -1,6 +1,6 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
-
+/** CUIDADO CON SINCRONIZAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**/
 public class PeerState {
 	private String ip;
 	private int port;
@@ -75,7 +75,7 @@ public class PeerState {
 		if(bitfield.length==this.bitfield.length){
 			this.bitfield = bitfield;
 		}else{
-			throw new IllegalArgumentException("The length of the array is illegal.");
+			throw new IllegalArgumentException("The length of the array is illegal. Must be '"+this.bitfield.length+"' but is '"+bitfield.length+"'");
 		}
 		
 	}
@@ -85,6 +85,15 @@ public class PeerState {
 	public byte getBitfieldPosition(int position){
 		return this.bitfield[position];
 	}
+	
+	public boolean hasFragment(int position){
+		if(this.bitfield[position]==0){
+			return false;
+		}else{
+			return true;
+		}
+	
+	}
 	public boolean equals(PeerState peerState){
 		if(this.ip.equals(peerState.getIp())&&this.port==peerState.getPort()){
 			return true;
@@ -93,4 +102,5 @@ public class PeerState {
 		}
 	}
 
+	
 }

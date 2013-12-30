@@ -50,13 +50,18 @@ public class TorrentClient {
 
 
 	public int getNumberOfPieces() {
-		return this.metainf.getInfo().getLength()
+		int pieces= this.metainf.getInfo().getLength()
 				/ this.metainf.getInfo().getPieceLength();
+		
+		if(pieces==0){
+			pieces=1;
+		}
+		return pieces;
+		
 	}
 
 	public void downloadTorrent(String torrentName) throws IOException {
-		TorrentClient torrent = new TorrentClient();
-		this.metainf = torrent.obtainMetaInfo(torrentName);
+		this.metainf = this.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
 		String trackerResponse = httprRequest(metainf, this.port, 0, 0, 62113);
 		if (trackerResponse != null) {
@@ -68,15 +73,11 @@ public class TorrentClient {
 				this.interval = mih.getInterval();
 				this.peerStateList = mih.getPeerStateArray(this
 						.getNumberOfPieces(), new PeerState(this.ip, this.port,
-						0));
-				// connect to one peer
-				System.out.println("Bytes:  "
-						+ new String(this.metainf.getInfo().getInfoHash())
-								.getBytes().length);
-				peerStateList.toString();
-				handShakeToPeer(this.peerStateList.get(0), new Handsake(
-						new String(this.metainf.getInfo().getInfoHash()),
-						this.peerId));
+								this.getNumberOfPieces()));
+				// connect to the peers
+				//DE MOMENTO PARA UN SOLO PEER
+				PeerConnection peerConnection = new PeerConnection(this,this.peerStateList.get(0));
+				peerConnection.start();
 			} catch (Exception e) {
 				System.out.println("Can't parse the tracker response");
 				e.printStackTrace();
@@ -87,6 +88,7 @@ public class TorrentClient {
 		}
 	}
 
+	/*BORRAR ESTE METODO*/
 	public void handShakeToPeer(PeerState peerState, Handsake message) {
 		try (Socket tcpSocket = new Socket(peerState.getIp(),
 				peerState.getPort());
@@ -95,14 +97,12 @@ public class TorrentClient {
 				DataOutputStream out = new DataOutputStream(
 						tcpSocket.getOutputStream())) {
 			out.write(message.getBytes());
-			// out.writeUTF(messageToSend);
 			System.out.println(" - Sent data to '"
 					+ tcpSocket.getInetAddress().getHostAddress() + ":"
 					+ tcpSocket.getPort() + "' -> '" + message + "'");
 			System.out.println("Waiting for the answer.");
 			byte[] bytesHandshake = new byte[68];
 			int num = in.read(bytesHandshake);
-			// String data=in.readUTF();
 			System.out.println(" - Received data from the peer (" + num
 					+ ") -> '" + new String(bytesHandshake) + "'");
 			byte[] lastBytes = new byte[in.available()];
@@ -205,4 +205,13 @@ public class TorrentClient {
 		return result;
 
 	}
+
+	public String getPeerId() {
+		return peerId;
+	}
+
+	public MetainfoFile<?> getMetainf() {
+		return metainf;
+	}
+	
 }

@@ -23,4 +23,6 @@ public class HaveMsg extends PeerProtocolMessage {
 			System.out.println("# Error updating HaveMsg payload: " + ex.getMessage());
 		}
 	}	
+	
+	
 }

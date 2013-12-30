@@ -1,6 +1,7 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
@@ -80,7 +81,7 @@ public abstract class PeerProtocolMessage {
 		}
 	}
 	
-	public PeerProtocolMessage parseMessage(byte[] msgBytes) {
+	public static PeerProtocolMessage parseMessage(byte[] msgBytes) {
 		PeerProtocolMessage message = null;
 		
 		if (msgBytes != null && msgBytes.length != 0) {
@@ -93,7 +94,7 @@ public abstract class PeerProtocolMessage {
 			}
 			
 			int id = msgBytes[4];
-					
+								
 			switch (id) {			
 				case 0:	//choke
 					message = new ChokeMsg();
@@ -135,5 +136,36 @@ public abstract class PeerProtocolMessage {
 		}
 		
 		return message;		
+	}
+	
+	/**
+	 * Método que parsea los mensajes 
+	 * @param msgBytes array de bytes con los bytes de los mensajes a parsear 
+	 * @return ArrayList <PeerProtocol> messages parseados
+	 */
+	public static ArrayList<PeerProtocolMessage> parseMessages(byte[] msgBytes) {
+		ArrayList<PeerProtocolMessage> messageArray= new ArrayList<PeerProtocolMessage>();
+		
+		int position=0;
+		while(position<msgBytes.length){
+			int length=ToolKit.bigEndianBytesToInt(msgBytes, position);
+			length+=4;
+			
+			byte[]message=new byte[length];
+			for(int i=0,ii=message.length;i<ii;i++){
+				message[i]=msgBytes[i+position];	
+				
+			}
+			
+			PeerProtocolMessage parsedMessage=PeerProtocolMessage.parseMessage(message);
+			if(parsedMessage!=null){
+				messageArray.add(parsedMessage);
+			}
+			System.out.println("Parsed Message: "+parsedMessage.getType());
+			position+=length;
+		}
+		
+		
+		return messageArray;
 	}
 }

@@ -41,5 +41,8 @@ public class PeerStateList {
 	public PeerState get(int index){
 		return peerStateList.get(index);
 	}
+	public int size(){
+		return this.peerStateList.size();
+	}
 
 }
