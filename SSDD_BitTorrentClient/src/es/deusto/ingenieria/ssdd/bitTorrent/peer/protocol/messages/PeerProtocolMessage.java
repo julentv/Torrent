@@ -88,7 +88,6 @@ public abstract class PeerProtocolMessage {
 			
 			int length = ToolKit.bigEndianBytesToInt(msgBytes, 0);
 			
-			//
 			if (length == 0) {
 				return new KeepAliveMsg();
 			}
@@ -149,14 +148,8 @@ public abstract class PeerProtocolMessage {
 		int position=0;
 		while(position<msgBytes.length){
 			int length=ToolKit.bigEndianBytesToInt(msgBytes, position);
-			length+=4;
-			
-			byte[]message=new byte[length];
-			for(int i=0,ii=message.length;i<ii;i++){
-				message[i]=msgBytes[i+position];	
-				
-			}
-			
+			length+=4+position;
+			byte[]message=ToolKit.subArray(msgBytes, position, length);
 			PeerProtocolMessage parsedMessage=PeerProtocolMessage.parseMessage(message);
 			if(parsedMessage!=null){
 				messageArray.add(parsedMessage);

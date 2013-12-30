@@ -224,4 +224,15 @@ public class ToolKit {
 				
 		return bufferID.toString();
 	}	
+
+	public static byte[] subArray(byte[] completeArray, int startPosition, int finalPosition){
+		byte[] subArray = new byte[finalPosition-startPosition];
+		for(int i=0;i<subArray.length;i++){
+			subArray[i]=completeArray[i+startPosition];	
+			
+		}
+		return subArray;
+	}
+
+
 }

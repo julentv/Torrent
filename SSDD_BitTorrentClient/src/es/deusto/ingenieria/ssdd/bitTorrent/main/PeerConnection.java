@@ -28,69 +28,90 @@ public class PeerConnection extends Thread{
 	private PeerState peerState;
 	// this is ourself
 	private TorrentClient torrent;
+	private Socket tcpSocket;
+	private DataInputStream in;
+	private DataOutputStream out;
 
 	public PeerConnection(TorrentClient torrentClient, PeerState peer) {
 		this.torrent = torrentClient;
 		this.peerState = peer;
+		try {
+			this.tcpSocket = new Socket(peerState.getIp(),
+					peerState.getPort());
+			 in = new DataInputStream(
+					tcpSocket.getInputStream());
+			 out = new DataOutputStream(
+					tcpSocket.getOutputStream());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
 	}
 
 	private void connectToPeer() {
 		/**
 		 * si devuelve handshake !=null--parsear procesar requesst
 		 */
-
-		if (handshake() != null) {
-
+		
+		if (handshake()) {
+			//send interested
+			sendInterestedMessage();
 		}
 	}
+	
+	private byte[] sendMessage(byte[]message){
+		try {
+			out.write(message);
+			System.out.println(" - Sent data to '"
+					+ tcpSocket.getInetAddress().getHostAddress() + ":"
+					+ tcpSocket.getPort() + "' -> '" + new String(message) + "'");
+			System.out.println("Waiting for the answer.");
+			byte[] answer = new byte[in.available()];
+			in.read(answer);
+			System.out.println(" - Received data from the peer () -> '" + new String(answer) + "'");	
+			return answer;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private void sendInterestedMessage(){
+		byte[] interestedMessage= {0,0,0,1,2};
+		sendMessage(interestedMessage);
+	}
 
-	public byte[] handshake() {
+	public boolean handshake() {
+		
 		// create the handshake message
 		Handsake handshakeMessage = new Handsake(new String(this.torrent
 				.getMetainf().getInfo().getInfoHash()),
 				this.torrent.getPeerId());
 		// send handshake to the peer
-		try (Socket tcpSocket = new Socket(peerState.getIp(),
-				peerState.getPort());
-				DataInputStream in = new DataInputStream(
-						tcpSocket.getInputStream());
-				DataOutputStream out = new DataOutputStream(
-						tcpSocket.getOutputStream())) {
-			out.write(handshakeMessage.getBytes());
-			System.out.println(" - Sent data to '"
-					+ tcpSocket.getInetAddress().getHostAddress() + ":"
-					+ tcpSocket.getPort() + "' -> '" + handshakeMessage + "'");
-			System.out.println("Waiting for the answer.");
-			byte[] bytesHandshake = new byte[68];
-			int num = in.read(bytesHandshake);
-			System.out.println(" - Received data from the peer (" + num
-					+ ") -> '" + new String(bytesHandshake) + "'");
+		try{
+			byte[] answer= sendMessage(handshakeMessage.getBytes());
+			byte[] bytesHandshake = ToolKit.subArray(answer, 0, 68);
 			boolean isValidHandshake=Handsake.isValidHandsakeForBitTorrentProtocol(Handsake.parseStringToHandsake(new String(bytesHandshake)),new String(this.torrent.getMetainf().getInfo().getInfoHash()));			
+			
 			if(isValidHandshake){
-				byte[] lastBytes = new byte[in.available()];
-				in.read(lastBytes);
-				System.out.println("Resto de bytes: '" + new String(lastBytes)
-						+ "'");
-				processMessages(PeerProtocolMessage.parseMessages(lastBytes));
+				byte[] elResto=ToolKit.subArray(answer, 68, answer.length);
+				processMessages(PeerProtocolMessage.parseMessages(elResto));
 				
 			}else{
 				throw new ReceivedMessageException("The Received Handshake is not correct.");
 			}
 			
-		} catch (UnknownHostException e) {
-			System.err.println("# TCPClient Socket error: " + e.getMessage());
-			e.printStackTrace();
-		} catch (EOFException e) {
-			System.err.println("# TCPClient EOF error: " + e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println("# TCPClient IO error: " + e.getMessage());
-			e.printStackTrace();
+		
 		} catch (ReceivedMessageException e) {
 			e.printStackTrace();
-			return null;
+			return false;
 		}
-		return null;
+		return true;
 
 	}
 
@@ -112,7 +133,8 @@ public class PeerConnection extends Thread{
 				break;
 			case 5: // bitfield
 				// cambiar el bitfield del peer
-				peerState.setBitfield(messageArray.get(i).getPayload());
+				byte[] payload=messageArray.get(i).getPayload();
+				peerState.setBitfield(payload);
 				
 				break;
 
