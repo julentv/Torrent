@@ -52,9 +52,10 @@ public class TorrentClient {
 	public int getNumberOfPieces() {
 		int pieces= this.metainf.getInfo().getLength()
 				/ this.metainf.getInfo().getPieceLength();
-		
-		if(pieces==0){
-			pieces=1;
+		if(this.metainf.getInfo().getLength()
+				% this.metainf.getInfo().getPieceLength()!=0)
+		{
+			pieces+=1;
 		}
 		return pieces;
 		
