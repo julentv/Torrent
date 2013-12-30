@@ -9,6 +9,9 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import com.sun.media.sound.Toolkit;
+
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.BitfieldMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.CancelMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.ChokeMsg;
@@ -52,13 +55,16 @@ public class PeerConnection extends Thread{
 				
 	}
 
-	private void connectToPeer() {
+	private void connectToPeer() throws IOException {
 		
 		if (handshake()) {
 			//send interested
 			sendInterestedMessage();
 			request();
 		}
+		in.close();
+		out.close();
+		tcpSocket.close();
 	}
 	
 	private byte[] sendMessage(byte[]message){
@@ -68,9 +74,15 @@ public class PeerConnection extends Thread{
 					+ tcpSocket.getInetAddress().getHostAddress() + ":"
 					+ tcpSocket.getPort() + "' -> '" + new String(message) + "'");
 			System.out.println("Waiting for the answer.");
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			byte[] answer = new byte[in.available()];
 			in.read(answer);
-			System.out.println(" - Received data from the peer () -> '" + new String(answer) + "'");	
+			System.out.println(" - Received data from the peer () -> '" + new String(answer) + "'");
 			return answer;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -81,6 +93,7 @@ public class PeerConnection extends Thread{
 	
 	private void sendInterestedMessage(){
 		InterestedMsg interestedMessage= new InterestedMsg();
+		//byte[]interested={0,0,0,1,2};
 		sendMessage(interestedMessage.getBytes());
 	}
 
@@ -156,7 +169,7 @@ public class PeerConnection extends Thread{
 		// descargar subfragmento--mandar request
 		byte[]asdasd=ByteBuffer.allocate(4).putInt(32768).array();
 		byte[]length=ByteBuffer.allocate(4).putInt(13).array();
-		RequestMsg requestMessage=new RequestMsg(0, 0, 32768);
+		RequestMsg requestMessage=new RequestMsg(0, 0, 49);
 		this.sendMessage(requestMessage.getBytes());
 		// volver a paso 1
 	}
@@ -164,7 +177,12 @@ public class PeerConnection extends Thread{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		connectToPeer();
+		try {
+			connectToPeer();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
