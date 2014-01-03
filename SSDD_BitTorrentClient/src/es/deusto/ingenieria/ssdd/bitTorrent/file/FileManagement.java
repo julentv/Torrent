@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import es.deusto.ingenieria.ssdd.bitTorrent.main.FragmentsInformation;
+import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
 public class FileManagement {
 
@@ -33,6 +34,11 @@ public class FileManagement {
 			e.printStackTrace();
 			
 		} 
+	}
+	
+	public void storeInFileWithLast(int position, byte[] bytesToStore,int last){
+		storeInFile(position,bytesToStore);
+		storeInFile(bytesToStore.length,ToolKit.intToBigEndianBytes(last, new byte[4], 0));
 	}
 	
 	public byte[] readFromFile(int position, int lenght){

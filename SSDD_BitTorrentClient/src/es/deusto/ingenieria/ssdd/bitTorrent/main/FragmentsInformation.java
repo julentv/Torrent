@@ -3,6 +3,7 @@ package es.deusto.ingenieria.ssdd.bitTorrent.main;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import es.deusto.ingenieria.ssdd.bitTorrent.file.FileManagement;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.StringUtils;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
@@ -112,10 +113,11 @@ public class FragmentsInformation {
 		boolean notify=false;
 		// comprobar si se completa el fragmento
 		if(this.isCompleted()){
-			//validar hash 
-			if(this.validateHash()){
+			//validar hash
+			byte[]fullArray=concatSubFragments();
+			if(this.validateHash(fullArray)){
 				//guardar en fichero
-				this.saveToFile();
+				this.saveToFile(fullArray);
 				this.currentFragment=this.currentFragment+1;
 				initializeSubFragments();
 				notify=true;
@@ -190,19 +192,7 @@ public class FragmentsInformation {
 	
 	
 	/*METODOS SIN IMPLEMENTAR*/
-	private boolean validateHash(){
-		byte[]fullArray;
-		if(this.isLastPiece()){
-			fullArray=new byte[this.fileLength%this.fragmentLength];
-		}else{
-			fullArray=new byte[this.fragmentLength];
-		}
-		//concatenate the subfragments
-		for(int i=0,ii=this.downloadingFragments.length;i<ii;i++){
-			for(int j=0,jj=this.downloadingFragments[i].length;j<jj;j++){
-				fullArray[(i*this.subfragmentLength)+j]=downloadingFragments[i][j];
-			}
-		}
+	private boolean validateHash(byte[]fullArray){
 		byte[]generatedHash=ToolKit.generateSHA1Hash(fullArray);
 		String generatedHashString=new String(generatedHash);
 		try {
@@ -218,8 +208,25 @@ public class FragmentsInformation {
 		}
 		return false;
 	}
-	private void saveToFile(){
+	private byte[] concatSubFragments(){
+		byte[]fullArray;
+		if(this.isLastPiece()){
+			fullArray=new byte[this.fileLength%this.fragmentLength];
+		}else{
+			fullArray=new byte[this.fragmentLength];
+		}
+		//concatenate the subfragments
+		for(int i=0,ii=this.downloadingFragments.length;i<ii;i++){
+			for(int j=0,jj=this.downloadingFragments[i].length;j<jj;j++){
+				fullArray[(i*this.subfragmentLength)+j]=downloadingFragments[i][j];
+			}
+		}
 		
+		return fullArray;
+	}
+	private void saveToFile(byte[]bytes){
+		FileManagement fileManagement= new FileManagement("index.txt", 53);
+		fileManagement.storeInFileWithLast(0, bytes,0);
 	}
 	
 }

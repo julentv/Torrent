@@ -11,8 +11,8 @@ public class Main {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				System.in));
 		// String torrentFileName = reader.readLine();
-		String torrentFileName = "index.txt.torrent";
-		//String torrentFileName = "ubuntu-13.10-desktop-amd64.iso.torrent";
+		//String torrentFileName = "index.txt.torrent";
+		String torrentFileName = "gilipollez de raquel.png.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
 	}
