@@ -1,6 +1,10 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
+
+import es.deusto.ingenieria.ssdd.bitTorrent.util.StringUtils;
+import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
 
 public class FragmentsInformation {
@@ -14,8 +18,8 @@ public class FragmentsInformation {
 	private int fileLength;
 	private int subfragmentLength;
 	private int numberOfFragments;
-	private List<String>pieceHashes;
-	public FragmentsInformation(int fileLength, int fragmentLength, int subfragmentLength, int currentFragment, List<String>pieceHashes){
+	private List<byte[]>pieceHashes;
+	public FragmentsInformation(int fileLength, int fragmentLength, int subfragmentLength, int currentFragment, List<byte[]>pieceHashes){
 			this.fileLength=fileLength;
 			this.fragmentLength=fragmentLength;
 			this.subfragmentLength=subfragmentLength;
@@ -30,13 +34,12 @@ public class FragmentsInformation {
 		int numberOfSubFragments=0;
 		if(currentFragment+1>numberOfFragments||currentFragment<-1){
 			//the file is completed
-			currentFragment=-1;
 			this.downloadingFragments=null;
 			this.isDownloaded=null;
 			this.canBeDownloaded=null;
 			
 		}else{
-			if(this.isLastPiece()){
+			if(!this.isLastPiece()){
 				numberOfSubFragments=numberOfPieces(fragmentLength,subfragmentLength);
 				downloadingFragments= new byte[numberOfSubFragments][];
 				for(int i=0,ii=downloadingFragments.length;i<ii;i++){
@@ -140,7 +143,7 @@ public class FragmentsInformation {
 	 * @return
 	 */
 	public synchronized boolean isLastPiece(){
-		return currentFragment+1!=numberOfFragments;
+		return currentFragment+1==numberOfFragments;
 	}
 	
 	public boolean downloadFinished(){
@@ -187,6 +190,25 @@ public class FragmentsInformation {
 	
 	/*METODOS SIN IMPLEMENTAR*/
 	private boolean validateHash(){
+		byte[]fullArray;
+		if(this.isLastPiece()){
+			fullArray=new byte[this.fileLength%this.fragmentLength];
+		}else{
+			fullArray=new byte[this.fragmentLength];
+		}
+		//concatenate the subfragments
+		for(int i=0,ii=this.downloadingFragments.length;i<ii;i++){
+			for(int j=0,jj=this.downloadingFragments[i].length;j<jj;j++){
+				fullArray[(i*this.subfragmentLength)+j]=downloadingFragments[i][j];
+			}
+		}
+		byte[]generatedHash=ToolKit.generateSHA1Hash(fullArray);
+		String generatedHashString=StringUtils.toHexString(generatedHash);
+		byte[]goodHash=this.pieceHashes.get(currentFragment);
+		String goodHashString=StringUtils.toHexString(goodHash);
+		if(generatedHash.equals(goodHash)){
+			return true;
+		}
 		return false;
 	}
 	private void saveToFile(){

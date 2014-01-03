@@ -201,6 +201,7 @@ public class ToolKit {
 		try {
 			byte[] hash = new byte[20];
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
+			sha.reset();
 			hash = sha.digest(bytes);
 			
 			return hash;		
