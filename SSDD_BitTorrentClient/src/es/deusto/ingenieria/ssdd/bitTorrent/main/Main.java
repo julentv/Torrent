@@ -14,7 +14,5 @@ public class Main {
 		String torrentFileName = "index.txt.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
-
 	}
-
 }

@@ -51,8 +51,7 @@ public class PeerConnection extends Thread{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-				
+		}	
 	}
 
 	private void connectToPeer() throws IOException {
@@ -161,17 +160,26 @@ public class PeerConnection extends Thread{
 		}
 	}
 	
-
 	private void request() {
-		// comprobar perstate contains current fragment y si el current fragment
-		// es -1 (ha acabao ya)
 		// comprobar siguiente subfragmento a descargar
-		// descargar subfragmento--mandar request
-		byte[]asdasd=ByteBuffer.allocate(4).putInt(32768).array();
-		byte[]length=ByteBuffer.allocate(4).putInt(13).array();
-		RequestMsg requestMessage=new RequestMsg(0, 0, 49);
-		this.sendMessage(requestMessage.getBytes());
-		// volver a paso 1
+		FragmentsInformation fragmentInformation=this.torrent.getFragmentsInformation();
+		int[]pieceToAsk=fragmentInformation.pieceToAsk();
+		if(pieceToAsk!=null){
+			//comprobar que el peer contenga el fragmento
+			if(this.peerState.hasFragment(pieceToAsk[0])){
+				//descargar subfragmento
+				RequestMsg requestMessage=new RequestMsg(0, 0, 32);
+				this.sendMessage(requestMessage.getBytes());
+			}else{
+				//esperar
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@Override

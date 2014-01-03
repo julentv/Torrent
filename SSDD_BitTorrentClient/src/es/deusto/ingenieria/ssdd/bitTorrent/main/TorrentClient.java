@@ -25,13 +25,7 @@ public class TorrentClient {
 	private PeerStateList peerStateList;
 	private int interval;
 	private MetainfoFile<?> metainf;
-
-	/***********************Sincronizarlos**********************/
-	//si es -1 ha acabado ya
-	private int currentFragment;
-	private byte[][]downloadingFragments;
-	private int fragmentLength;
-	/***************************************************************/
+	private FragmentsInformation fragmentsInformation;
 
 	
 	public TorrentClient() {
@@ -44,9 +38,6 @@ public class TorrentClient {
 		this.metainf = null;
 	}
 	
-	public int getCurrentFragment() {
-		return currentFragment;
-	}
 
 
 	public int getNumberOfPieces() {
@@ -86,39 +77,6 @@ public class TorrentClient {
 
 		} else {
 			System.out.println("Can't connect to any tracker");
-		}
-	}
-
-	/*BORRAR ESTE METODO*/
-	public void handShakeToPeer(PeerState peerState, Handsake message) {
-		try (Socket tcpSocket = new Socket(peerState.getIp(),
-				peerState.getPort());
-				DataInputStream in = new DataInputStream(
-						tcpSocket.getInputStream());
-				DataOutputStream out = new DataOutputStream(
-						tcpSocket.getOutputStream())) {
-			out.write(message.getBytes());
-			System.out.println(" - Sent data to '"
-					+ tcpSocket.getInetAddress().getHostAddress() + ":"
-					+ tcpSocket.getPort() + "' -> '" + message + "'");
-			System.out.println("Waiting for the answer.");
-			byte[] bytesHandshake = new byte[68];
-			int num = in.read(bytesHandshake);
-			System.out.println(" - Received data from the peer (" + num
-					+ ") -> '" + new String(bytesHandshake) + "'");
-			byte[] lastBytes = new byte[in.available()];
-			in.read(lastBytes);
-			System.out.println("Resto de bytes: '" + new String(lastBytes)
-					+ "'");
-		} catch (UnknownHostException e) {
-			System.err.println("# TCPClient Socket error: " + e.getMessage());
-			e.printStackTrace();
-		} catch (EOFException e) {
-			System.err.println("# TCPClient EOF error: " + e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println("# TCPClient IO error: " + e.getMessage());
-			e.printStackTrace();
 		}
 	}
 
@@ -214,5 +172,14 @@ public class TorrentClient {
 	public MetainfoFile<?> getMetainf() {
 		return metainf;
 	}
+
+	public FragmentsInformation getFragmentsInformation() {
+		return fragmentsInformation;
+	}
+	public void setFragmentsInformation(FragmentsInformation fragmentsInformation) {
+		this.fragmentsInformation = fragmentsInformation;
+	}
+	
+	
 	
 }
