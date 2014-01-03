@@ -198,6 +198,13 @@ public class PeerConnection extends Thread {
 							System.out.println("Subfragmento '" + pieceToAsk[1]
 									+ "' no descargado!");
 							e.printStackTrace();
+							//esperar
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException ex) {
+								// TODO Auto-generated catch block
+								ex.printStackTrace();
+							}
 						}
 					}
 

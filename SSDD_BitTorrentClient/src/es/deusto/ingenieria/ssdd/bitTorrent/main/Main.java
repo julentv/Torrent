@@ -12,6 +12,7 @@ public class Main {
 				System.in));
 		// String torrentFileName = reader.readLine();
 		String torrentFileName = "index.txt.torrent";
+		//String torrentFileName = "ubuntu-13.10-desktop-amd64.iso.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
 	}

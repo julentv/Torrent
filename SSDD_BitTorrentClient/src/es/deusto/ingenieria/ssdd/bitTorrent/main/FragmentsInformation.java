@@ -90,7 +90,7 @@ public class FragmentsInformation {
 			pieceInformation=new int[3];
 			pieceInformation[0]=this.currentFragment;
 			pieceInformation[1]=blockToDownload*this.subfragmentLength;
-			pieceInformation[2]=this.subfragmentLength;
+			pieceInformation[2]=this.downloadingFragments[blockToDownload].length;
 		}		
 		return pieceInformation;
 	}
@@ -101,7 +101,8 @@ public class FragmentsInformation {
 	 * @param piecePosition
 	 * @return true if the thread must notify that it has the piece
 	 */
-	public synchronized boolean addPieceToArray(byte[]piece, int piecePosition){
+	public synchronized boolean addPieceToArray(byte[]piece, int pieceBeginingPosition){
+		int piecePosition=pieceBeginingPosition/this.subfragmentLength;
 		this.downloadingFragments[piecePosition]=piece;
 		this.isDownloaded[piecePosition]=true;
 		boolean notify=false;
