@@ -12,9 +12,9 @@ public class FileManagement {
 
 	private String fileName;
 	private RandomAccessFile randomAccessFile;
-	
-	public FileManagement(String fileName){
-	
+	private int fileLength;
+	public FileManagement(String fileName, int fileLength){
+		this.fileLength= fileLength;
 		this.fileName= fileName;
 	}
 	
@@ -23,6 +23,7 @@ public class FileManagement {
 		try {
 			// Se abre el fichero para lectura y escritura.
 			randomAccessFile = new RandomAccessFile (this.fileName, "rw");
+			randomAccessFile.setLength(fileLength);
 			randomAccessFile.seek(position);
 			// Escribimos los bytes de la pieza a partir de esa posicion
 			randomAccessFile.write(bytesToStore);
@@ -39,6 +40,7 @@ public class FileManagement {
 		try {
 			// Se abre el fichero para lectura y escritura.
 			randomAccessFile = new RandomAccessFile (this.fileName, "rw");
+			randomAccessFile.setLength(fileLength);
 			randomAccessFile.seek(position);
 			randomAccessFile.read(read, position, lenght);
 			//cerramos el fichero random
