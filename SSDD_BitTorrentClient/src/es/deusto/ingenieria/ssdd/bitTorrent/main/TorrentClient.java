@@ -26,6 +26,7 @@ public class TorrentClient {
 	private int interval;
 	private MetainfoFile<?> metainf;
 	private FragmentsInformation fragmentsInformation;
+	private int subfragmentLength;
 
 	
 	public TorrentClient() {
@@ -36,6 +37,7 @@ public class TorrentClient {
 				this.port, 0));
 		this.interval = 0;
 		this.metainf = null;
+		this.subfragmentLength=32;
 	}
 	
 
@@ -55,6 +57,7 @@ public class TorrentClient {
 	public void downloadTorrent(String torrentName) throws IOException {
 		this.metainf = this.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
+		this.fragmentsInformation= new FragmentsInformation(this.metainf.getInfo().getLength(), this.metainf.getInfo().getPieceLength(), this.subfragmentLength, 0, this.metainf.getInfo().getHexStringSHA1());
 		String trackerResponse = httprRequest(metainf, this.port, 0, 0, 62113);
 		if (trackerResponse != null) {
 			try {

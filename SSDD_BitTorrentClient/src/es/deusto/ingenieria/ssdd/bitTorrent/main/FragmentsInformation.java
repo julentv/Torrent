@@ -4,6 +4,7 @@ import java.util.List;
 
 
 public class FragmentsInformation {
+	//-1 if is finished
 	private int currentFragment;
 	private byte[][]downloadingFragments;
 	private boolean[]isDownloaded;
@@ -27,27 +28,40 @@ public class FragmentsInformation {
 	}
 	private synchronized void initializeSubFragments(){
 		int numberOfSubFragments=0;
-		if(this.isLastPiece()){
-			numberOfSubFragments=numberOfPieces(fragmentLength,subfragmentLength);
-			downloadingFragments= new byte[numberOfSubFragments][];
-			for(int i=0,ii=downloadingFragments.length;i<ii;i++){
-				downloadingFragments[i]=new byte[subfragmentLength];
-			}
-		}else{
-			int resto=fileLength%fragmentLength;
-			numberOfSubFragments=numberOfPieces(resto,subfragmentLength);
-			int lastPieceSize=resto%subfragmentLength;
-			downloadingFragments= new byte[numberOfSubFragments][];
-			for(int i=0,ii=downloadingFragments.length;i<ii;i++){
-				downloadingFragments[i]=new byte[subfragmentLength];
-			}
-			if(lastPieceSize!=0){
-				downloadingFragments[numberOfSubFragments-1]=new byte[lastPieceSize];
-			}
+		if(currentFragment+1>numberOfFragments||currentFragment<-1){
+			//the file is completed
+			currentFragment=-1;
+			this.downloadingFragments=null;
+			this.isDownloaded=null;
+			this.canBeDownloaded=null;
 			
+		}else{
+			if(this.isLastPiece()){
+				numberOfSubFragments=numberOfPieces(fragmentLength,subfragmentLength);
+				downloadingFragments= new byte[numberOfSubFragments][];
+				for(int i=0,ii=downloadingFragments.length;i<ii;i++){
+					downloadingFragments[i]=new byte[subfragmentLength];
+				}
+			}else{
+				int resto=fileLength%fragmentLength;
+				numberOfSubFragments=numberOfPieces(resto,subfragmentLength);
+				int lastPieceSize=resto%subfragmentLength;
+				downloadingFragments= new byte[numberOfSubFragments][];
+				for(int i=0,ii=downloadingFragments.length;i<ii;i++){
+					downloadingFragments[i]=new byte[subfragmentLength];
+				}
+				if(lastPieceSize!=0){
+					downloadingFragments[numberOfSubFragments-1]=new byte[lastPieceSize];
+				}
+				
+			}
+			this.isDownloaded= new boolean[numberOfSubFragments];
+			this.canBeDownloaded= new boolean[numberOfSubFragments];
+			for(int i=0,ii=canBeDownloaded.length;i<ii;i++){
+				canBeDownloaded[i]=true;
+			}
 		}
-		this.isDownloaded= new boolean[numberOfSubFragments];
-		this.canBeDownloaded= new boolean[numberOfSubFragments];
+		
 		
 	}
 	private int numberOfPieces(int big, int small){
@@ -67,7 +81,7 @@ public class FragmentsInformation {
 	public synchronized int[] pieceToAsk(){
 		int blockToDownload=-1;
 		for(int i=0,ii=isDownloaded.length;i<ii&&blockToDownload==-1;i++){
-			if(isDownloaded[i]){
+			if(!isDownloaded[i]){
 				blockToDownload=i;
 			}
 		}
@@ -107,6 +121,10 @@ public class FragmentsInformation {
 		return notify;
 		
 	}
+	/**
+	 * Indicates if the current fragment is completed
+	 * @return
+	 */
 	public synchronized boolean isCompleted(){
 		boolean isCompleted=true;
 		for(int i=0,ii=isDownloaded.length;i<ii&&isCompleted;i++){
@@ -116,15 +134,52 @@ public class FragmentsInformation {
 		}
 		return isCompleted;
 	}
-	public boolean isLastPiece(){
+	/**
+	 * Indicates if the current fragment is the last
+	 * @return
+	 */
+	public synchronized boolean isLastPiece(){
 		return currentFragment+1!=numberOfFragments;
 	}
-	public synchronized boolean beginFragmentDownload(int fragmentPos){
-		if(this.canBeDownloaded[fragmentPos]){
+	
+	public boolean downloadFinished(){
+		boolean finished=false;
+		if(currentFragment<0||(this.isLastPiece()&&this.isCompleted())){
+			finished=true;
+			currentFragment=-1;
+		}
+		return finished;
+	}
+	
+	/**
+	 * 
+	 * Blocks a fragment when is going to begin its download so another thread
+	 * doesn't start the same fragments download
+	 * @param fragmentPos
+	 * @return
+	 */
+	public synchronized boolean blockFragment(int fragmentBeginningPos){
+		int fragmentPos=fragmentBeginningPos/this.subfragmentLength;
+		if(this.isDownloaded[fragmentPos]){
 			this.canBeDownloaded[fragmentPos]=false;
-			return true;
-		}else{
 			return false;
+		}else{
+			if(this.canBeDownloaded[fragmentPos]){
+				this.canBeDownloaded[fragmentPos]=false;
+				return true;
+			}else{
+				return false;
+			}
+		}
+	}
+	/**
+	 * Unblocks a fragment if the thread could not download it
+	 * @param fragmentPos
+	 */
+	public synchronized void unblockFragment(int fragmentBeginningPos){
+		int fragmentPos=fragmentBeginningPos/this.subfragmentLength;
+		if(!this.isDownloaded[fragmentPos]){
+			this.canBeDownloaded[fragmentPos]=true;
 		}
 	}
 	

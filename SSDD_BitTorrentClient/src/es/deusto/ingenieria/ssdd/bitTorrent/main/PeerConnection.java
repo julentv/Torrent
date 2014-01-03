@@ -26,7 +26,7 @@ import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.RequestMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.UnChokeMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
-public class PeerConnection extends Thread{
+public class PeerConnection extends Thread {
 	// this is the peer we are going to connect to
 	private PeerState peerState;
 	// this is ourself
@@ -34,30 +34,28 @@ public class PeerConnection extends Thread{
 	private Socket tcpSocket;
 	private DataInputStream in;
 	private DataOutputStream out;
+	private int lastFragment=-1;
 
 	public PeerConnection(TorrentClient torrentClient, PeerState peer) {
 		this.torrent = torrentClient;
 		this.peerState = peer;
 		try {
-			this.tcpSocket = new Socket(peerState.getIp(),
-					peerState.getPort());
-			 in = new DataInputStream(
-					tcpSocket.getInputStream());
-			 out = new DataOutputStream(
-					tcpSocket.getOutputStream());
+			this.tcpSocket = new Socket(peerState.getIp(), peerState.getPort());
+			in = new DataInputStream(tcpSocket.getInputStream());
+			out = new DataOutputStream(tcpSocket.getOutputStream());
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
 	}
 
 	private void connectToPeer() throws IOException {
-		
+
 		if (handshake()) {
-			//send interested
+			// send interested
 			sendInterestedMessage();
 			request();
 		}
@@ -65,23 +63,25 @@ public class PeerConnection extends Thread{
 		out.close();
 		tcpSocket.close();
 	}
-	
-	private byte[] sendMessage(byte[]message){
+
+	private byte[] sendMessage(byte[] message) {
 		try {
 			out.write(message);
 			System.out.println(" - Sent data to '"
 					+ tcpSocket.getInetAddress().getHostAddress() + ":"
-					+ tcpSocket.getPort() + "' -> '" + new String(message) + "'");
+					+ tcpSocket.getPort() + "' -> '" + new String(message)
+					+ "'");
 			System.out.println("Waiting for the answer.");
 			try {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			byte[] answer = new byte[in.available()];
 			in.read(answer);
-			System.out.println(" - Received data from the peer () -> '" + new String(answer) + "'");
+			System.out.println(" - Received data from the peer () -> '"
+					+ new String(answer) + "'");
 			return answer;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -89,34 +89,38 @@ public class PeerConnection extends Thread{
 			return null;
 		}
 	}
-	
-	private void sendInterestedMessage(){
-		InterestedMsg interestedMessage= new InterestedMsg();
-		//byte[]interested={0,0,0,1,2};
+
+	private void sendInterestedMessage() {
+		InterestedMsg interestedMessage = new InterestedMsg();
+		// byte[]interested={0,0,0,1,2};
 		sendMessage(interestedMessage.getBytes());
 	}
 
 	public boolean handshake() {
-		
+
 		// create the handshake message
 		Handsake handshakeMessage = new Handsake(new String(this.torrent
 				.getMetainf().getInfo().getInfoHash()),
 				this.torrent.getPeerId());
 		// send handshake to the peer
-		try{
-			byte[] answer= sendMessage(handshakeMessage.getBytes());
+		try {
+			byte[] answer = sendMessage(handshakeMessage.getBytes());
 			byte[] bytesHandshake = ToolKit.subArray(answer, 0, 68);
-			boolean isValidHandshake=Handsake.isValidHandsakeForBitTorrentProtocol(Handsake.parseStringToHandsake(new String(bytesHandshake)),new String(this.torrent.getMetainf().getInfo().getInfoHash()));			
-			
-			if(isValidHandshake){
-				byte[] elResto=ToolKit.subArray(answer, 68, answer.length);
+			boolean isValidHandshake = Handsake
+					.isValidHandsakeForBitTorrentProtocol(Handsake
+							.parseStringToHandsake(new String(bytesHandshake)),
+							new String(this.torrent.getMetainf().getInfo()
+									.getInfoHash()));
+
+			if (isValidHandshake) {
+				byte[] elResto = ToolKit.subArray(answer, 68, answer.length);
 				processMessages(PeerProtocolMessage.parseMessages(elResto));
-				
-			}else{
-				throw new ReceivedMessageException("The Received Handshake is not correct.");
+
+			} else {
+				throw new ReceivedMessageException(
+						"The Received Handshake is not correct.");
 			}
-			
-		
+
 		} catch (ReceivedMessageException e) {
 			e.printStackTrace();
 			return false;
@@ -138,48 +142,77 @@ public class PeerConnection extends Thread{
 
 			case 4: // have
 				// cambiar el bitfield del peer
-				int pieceNumber=ToolKit.bigEndianBytesToInt(messageArray.get(i).getPayload(), 0);
-				peerState.getBitfield()[pieceNumber]=1;
+				int pieceNumber = ToolKit.bigEndianBytesToInt(
+						messageArray.get(i).getPayload(), 0);
+				peerState.getBitfield()[pieceNumber] = 1;
 				break;
 			case 5: // bitfield
 				// cambiar el bitfield del peer
-				byte[] payload=messageArray.get(i).getPayload();
+				byte[] payload = messageArray.get(i).getPayload();
 				peerState.setBitfield(payload);
-				
+
 				break;
 
 			case 7: // piece
 
 				break;
-			
-			default: 
-				
+
+			default:
+
 				break;
 
 			}
 		}
 	}
-	
+
 	private void request() {
-		// comprobar siguiente subfragmento a descargar
-		FragmentsInformation fragmentInformation=this.torrent.getFragmentsInformation();
-		int[]pieceToAsk=fragmentInformation.pieceToAsk();
-		if(pieceToAsk!=null){
-			//comprobar que el peer contenga el fragmento
-			if(this.peerState.hasFragment(pieceToAsk[0])){
-				//descargar subfragmento
-				RequestMsg requestMessage=new RequestMsg(0, 0, 32);
-				this.sendMessage(requestMessage.getBytes());
-			}else{
-				//esperar
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		FragmentsInformation fragmentInformation = this.torrent
+				.getFragmentsInformation();
+		while (!fragmentInformation.downloadFinished()) {
+			
+			// comprobar siguiente subfragmento a descargar
+			int[] pieceToAsk = fragmentInformation.pieceToAsk();
+			if (pieceToAsk != null) {
+				if(this.lastFragment<0){
+					lastFragment=pieceToAsk[0];
+				}else if(this.lastFragment<pieceToAsk[0]){
+					//si se a descargado todo el fragmento notificar que lo tenemos
+				}
+				// comprobar que el peer contenga el fragmento
+				if (this.peerState.hasFragment(pieceToAsk[0])) {
+					// bloquear el fragmento
+					if (fragmentInformation.blockFragment(pieceToAsk[1])) {
+						try {
+							// descargar subfragmento
+							RequestMsg requestMessage = new RequestMsg(pieceToAsk[0], pieceToAsk[1], pieceToAsk[2]);
+							byte[]response=this.sendMessage(requestMessage.getBytes());
+							//parsear respuesta
+							PieceMsg piece=(PieceMsg) PeerProtocolMessage.parseMessage(response);
+							//añadir al array
+							byte[]subfragment=ToolKit.subArray(piece.getPayload(), 8, piece.getPayload().length);
+							boolean notify=fragmentInformation.addPieceToArray(subfragment, pieceToAsk[1]);
+							
+						} catch (Exception e) {
+							// si algo va mal desbloquear el subfragmento
+							fragmentInformation.unblockFragment(pieceToAsk[1]);
+							System.out.println("Subfragmento '" + pieceToAsk[1]
+									+ "' no descargado!");
+							e.printStackTrace();
+						}
+					}
+
+				} else {
+					//esperar
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
+
 	}
 
 	@Override
