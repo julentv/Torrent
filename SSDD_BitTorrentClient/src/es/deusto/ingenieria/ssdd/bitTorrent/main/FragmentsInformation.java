@@ -32,11 +32,12 @@ public class FragmentsInformation {
 	}
 	private synchronized void initializeSubFragments(){
 		int numberOfSubFragments=0;
-		if(currentFragment+1>numberOfFragments||currentFragment<-1){
+		if(currentFragment+1>numberOfFragments||currentFragment<0){
 			//the file is completed
 			this.downloadingFragments=null;
 			this.isDownloaded=null;
 			this.canBeDownloaded=null;
+			currentFragment=-1;
 			
 		}else{
 			if(!this.isLastPiece()){
@@ -115,7 +116,7 @@ public class FragmentsInformation {
 			if(this.validateHash()){
 				//guardar en fichero
 				this.saveToFile();
-				this.currentFragment++;
+				this.currentFragment=this.currentFragment+1;
 				initializeSubFragments();
 				notify=true;
 			}else{
@@ -203,10 +204,16 @@ public class FragmentsInformation {
 			}
 		}
 		byte[]generatedHash=ToolKit.generateSHA1Hash(fullArray);
-		String generatedHashString=StringUtils.toHexString(generatedHash);
+		String generatedHashString=new String(generatedHash);
+		try {
+			generatedHash=generatedHashString.getBytes("ASCII");
+			
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		byte[]goodHash=this.pieceHashes.get(currentFragment);
-		String goodHashString=StringUtils.toHexString(goodHash);
-		if(generatedHash.equals(goodHash)){
+		if(new String(generatedHash).equals(new String(goodHash))){
 			return true;
 		}
 		return false;

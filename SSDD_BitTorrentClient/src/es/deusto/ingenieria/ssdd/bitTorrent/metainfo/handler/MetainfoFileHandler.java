@@ -1,5 +1,6 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public abstract class MetainfoFileHandler<Info extends InfoDictionary> {
 			return;
 		}
 
-		byte[] stringBytes = piecesString.getBytes(); 
+		byte[] stringBytes = piecesString.getBytes();
 		byte[] individualHash;		
 		int numPieces = piecesString.length() / 20;
 
