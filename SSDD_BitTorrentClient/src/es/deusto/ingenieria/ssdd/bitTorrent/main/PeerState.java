@@ -72,10 +72,12 @@ public class PeerState {
 	 * @param bitfield
 	 */
 	public void setBitfield(byte[] bitfield) {
+		
+		//nada, esto es todo mentira. Si manda despues los have el bitfield sololo envia con un cero
 		if(bitfield.length==this.bitfield.length){
 			this.bitfield = bitfield;
 		}else{
-			throw new IllegalArgumentException("The length of the array is illegal. Must be '"+this.bitfield.length+"' but is '"+bitfield.length+"'");
+			//throw new IllegalArgumentException("The length of the array is illegal. Must be '"+this.bitfield.length+"' but is '"+bitfield.length+"'");
 		}
 		
 	}

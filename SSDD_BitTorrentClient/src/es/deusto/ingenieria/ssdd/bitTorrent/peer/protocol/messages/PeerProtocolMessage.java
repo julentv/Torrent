@@ -155,7 +155,7 @@ public abstract class PeerProtocolMessage {
 				messageArray.add(parsedMessage);
 			}
 			System.out.println("Parsed Message: "+parsedMessage.getType());
-			position+=length;
+			position=length;
 		}
 		
 		

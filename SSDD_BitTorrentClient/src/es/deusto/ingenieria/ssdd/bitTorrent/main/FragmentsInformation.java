@@ -111,16 +111,20 @@ public class FragmentsInformation {
 		this.downloadingFragments[piecePosition]=piece;
 		this.isDownloaded[piecePosition]=true;
 		boolean notify=false;
+		System.out.println("Añadiendo al fragmento: ["+this.currentFragment+"/"+this.numberOfFragments+"] el subfragmento: ["+piecePosition+"/"+downloadingFragments.length+"]");
 		// comprobar si se completa el fragmento
 		if(this.isCompleted()){
+			System.out.println("Fragmento completado");
 			//validar hash
 			byte[]fullArray=concatSubFragments();
 			if(this.validateHash(fullArray)){
 				//guardar en fichero
 				this.saveToFile(fullArray);
+				System.out.println("Guardado en fichero el fragmento: "+this.currentFragment);
 				this.currentFragment=this.currentFragment+1;
 				initializeSubFragments();
 				notify=true;
+				
 			}else{
 				initializeSubFragments();
 			}
@@ -225,8 +229,8 @@ public class FragmentsInformation {
 		return fullArray;
 	}
 	private void saveToFile(byte[]bytes){
-		FileManagement fileManagement= new FileManagement("index.txt", 53);
-		fileManagement.storeInFileWithLast(0, bytes,0);
+		FileManagement fileManagement= new FileManagement("index.txt", this.fileLength+4);
+		fileManagement.storeInFileWithLast(this.currentFragment*this.fragmentLength, bytes,this.currentFragment);
 	}
 	
 }

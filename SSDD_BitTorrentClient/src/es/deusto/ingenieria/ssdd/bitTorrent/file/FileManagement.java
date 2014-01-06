@@ -16,7 +16,7 @@ public class FileManagement {
 	private int fileLength;
 	public FileManagement(String fileName, int fileLength){
 		this.fileLength= fileLength;
-		this.fileName= fileName;
+		this.fileName= "data/"+fileName;
 	}
 	
 	public void storeInFile(int position, byte[] bytesToStore){
@@ -38,7 +38,7 @@ public class FileManagement {
 	
 	public void storeInFileWithLast(int position, byte[] bytesToStore,int last){
 		storeInFile(position,bytesToStore);
-		storeInFile(bytesToStore.length,ToolKit.intToBigEndianBytes(last, new byte[4], 0));
+		storeInFile(this.fileLength-4,ToolKit.intToBigEndianBytes(last, new byte[4], 0));
 	}
 	
 	public byte[] readFromFile(int position, int lenght){

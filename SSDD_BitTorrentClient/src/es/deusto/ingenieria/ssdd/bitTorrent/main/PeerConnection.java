@@ -72,16 +72,24 @@ public class PeerConnection extends Thread {
 					+ tcpSocket.getPort() + "' -> '" + new String(message)
 					+ "'");
 			System.out.println("Waiting for the answer.");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			byte[] answer = new byte[in.available()];
-			in.read(answer);
-			System.out.println(" - Received data from the peer () -> '"
-					+ new String(answer) + "'");
+			int cont=0;
+			byte[] answer=null;
+			
+			//si no se recibe nada del socket esperar unos milisegundo y volver a intentar varias veces
+			do{
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				answer = new byte[in.available()];
+				in.read(answer);
+				System.out.println(" - Received data from the peer () -> '"
+						+ new String(answer) + "'");
+				cont++;
+			}while(cont<5&&answer.length<1);
+			
 			return answer;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

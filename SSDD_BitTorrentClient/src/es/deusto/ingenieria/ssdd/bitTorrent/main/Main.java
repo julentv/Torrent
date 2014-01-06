@@ -12,7 +12,7 @@ public class Main {
 				System.in));
 		// String torrentFileName = reader.readLine();
 		//String torrentFileName = "index.txt.torrent";
-		String torrentFileName = "gilipollez de raquel.png.torrent";
+		String torrentFileName = "NINJA.png.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
 	}
