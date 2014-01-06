@@ -71,7 +71,6 @@ public class PeerConnection extends Thread {
 					+ tcpSocket.getInetAddress().getHostAddress() + ":"
 					+ tcpSocket.getPort() + "' -> '" + new String(message)
 					+ "'");
-			System.out.println("Waiting for the answer.");
 			int cont=0;
 			byte[] answer=null;
 			

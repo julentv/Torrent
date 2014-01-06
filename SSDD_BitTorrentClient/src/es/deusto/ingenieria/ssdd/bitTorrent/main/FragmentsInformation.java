@@ -20,16 +20,16 @@ public class FragmentsInformation {
 	private int subfragmentLength;
 	private int numberOfFragments;
 	private List<byte[]>pieceHashes;
-	public FragmentsInformation(int fileLength, int fragmentLength, int subfragmentLength, int currentFragment, List<byte[]>pieceHashes){
+	private String fileName;
+	public FragmentsInformation(int fileLength, int fragmentLength, int subfragmentLength, int currentFragment, List<byte[]>pieceHashes, String fileName){
 			this.fileLength=fileLength;
 			this.fragmentLength=fragmentLength;
 			this.subfragmentLength=subfragmentLength;
 			this.currentFragment=currentFragment;
 			this.numberOfFragments=numberOfPieces(fileLength, fragmentLength);
 			this.pieceHashes=pieceHashes;
+			this.fileName=fileName;
 			initializeSubFragments();
-			
-			System.out.println("asdasd");
 	}
 	private synchronized void initializeSubFragments(){
 		int numberOfSubFragments=0;
@@ -111,7 +111,7 @@ public class FragmentsInformation {
 		this.downloadingFragments[piecePosition]=piece;
 		this.isDownloaded[piecePosition]=true;
 		boolean notify=false;
-		System.out.println("Añadiendo al fragmento: ["+this.currentFragment+"/"+this.numberOfFragments+"] el subfragmento: ["+piecePosition+"/"+downloadingFragments.length+"]");
+		System.out.println("Añadiendo al fragmento: ["+this.currentFragment+"/"+(this.numberOfFragments-1)+"] el subfragmento: ["+piecePosition+"/"+(downloadingFragments.length-1)+"]");
 		// comprobar si se completa el fragmento
 		if(this.isCompleted()){
 			System.out.println("Fragmento completado");
@@ -229,8 +229,14 @@ public class FragmentsInformation {
 		return fullArray;
 	}
 	private void saveToFile(byte[]bytes){
-		FileManagement fileManagement= new FileManagement("index.txt", this.fileLength+4);
-		fileManagement.storeInFileWithLast(this.currentFragment*this.fragmentLength, bytes,this.currentFragment);
+		if(!this.isLastPiece()){
+			FileManagement fileManagement= new FileManagement(this.fileName, this.fileLength+4);
+			fileManagement.storeInFileWithLast(this.currentFragment*this.fragmentLength, bytes,this.currentFragment);
+		}else{
+			FileManagement fileManagement= new FileManagement(this.fileName, this.fileLength);
+			fileManagement.storeInFile(this.currentFragment*this.fragmentLength, bytes);
+		}
+		
 	}
 	
 }
