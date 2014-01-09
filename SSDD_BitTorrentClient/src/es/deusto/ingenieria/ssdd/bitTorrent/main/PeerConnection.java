@@ -76,12 +76,15 @@ public class PeerConnection extends Thread {
 			
 			//si no se recibe nada del socket esperar unos milisegundo y volver a intentar varias veces
 			do{
-				try {
-					Thread.sleep(250);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if(cont>0){
+					try {
+						Thread.sleep(250);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				
 				answer = new byte[in.available()];
 				in.read(answer);
 				System.out.println(" - Received data from the peer () -> '"
@@ -194,12 +197,12 @@ public class PeerConnection extends Thread {
 							RequestMsg requestMessage = new RequestMsg(pieceToAsk[0], pieceToAsk[1], pieceToAsk[2]);
 							byte[]response=this.sendMessage(requestMessage.getBytes());
 							//parsear respuesta
-							PieceMsg piece=(PieceMsg) PeerProtocolMessage.parseMessage(response);
+							PieceMsg piece=(PieceMsg)PeerProtocolMessage.parseMessage(response);
 							//añadir al array
 							byte[]subfragment=ToolKit.subArray(piece.getPayload(), 8, piece.getPayload().length);
 							boolean notify=fragmentInformation.addPieceToArray(subfragment, pieceToAsk[1]);
 							
-						} catch (Exception e) {
+						}catch (Exception e) {
 							// si algo va mal desbloquear el subfragmento
 							fragmentInformation.unblockFragment(pieceToAsk[1]);
 							System.out.println("Subfragmento '" + pieceToAsk[1]

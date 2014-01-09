@@ -231,7 +231,7 @@ public class FragmentsInformation {
 	private void saveToFile(byte[]bytes){
 		if(!this.isLastPiece()){
 			FileManagement fileManagement= new FileManagement(this.fileName, this.fileLength+4);
-			fileManagement.storeInFileWithLast(this.currentFragment*this.fragmentLength, bytes,this.currentFragment);
+			fileManagement.storeInFileWithLast(this.currentFragment*this.fragmentLength, bytes,this.currentFragment+1);
 		}else{
 			FileManagement fileManagement= new FileManagement(this.fileName, this.fileLength);
 			fileManagement.storeInFile(this.currentFragment*this.fragmentLength, bytes);

@@ -19,7 +19,7 @@ public class FileManagement {
 		this.fileName= "data/"+fileName;
 	}
 	
-	public void storeInFile(int position, byte[] bytesToStore){
+	public void storeInFile(long position, byte[] bytesToStore){
 		
 		try {
 			// Se abre el fichero para lectura y escritura.
@@ -48,7 +48,7 @@ public class FileManagement {
 			randomAccessFile = new RandomAccessFile (this.fileName, "rw");
 			randomAccessFile.setLength(fileLength);
 			randomAccessFile.seek(position);
-			randomAccessFile.read(read, position, lenght);
+			randomAccessFile.read(read, 0, lenght);
 			//cerramos el fichero random
 			randomAccessFile.close();
 		} catch (IOException e) {
@@ -57,6 +57,30 @@ public class FileManagement {
 		}
 		
 		return read;
+	}
+	public boolean isCompleted(){
+		File file = new File(this.fileName);
+		long noseque=file.length();
+		if(file.length()==this.fileLength){
+			return false;
+		}else{
+			return true;
+		}
+	}
+	public int getCurrentFragment(){
+		if(this.isCompleted()){
+			return -1;
+		}else{
+			return ToolKit.bigEndianBytesToInt(readFromFile(this.fileLength-4,4), 0);
+		}
+	}
+	public boolean exists(){
+		File file = new File(this.fileName);
+		if(file.exists()){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 }
