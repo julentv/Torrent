@@ -25,4 +25,16 @@ public class RequestMsg extends PeerProtocolMessage {
 			System.out.println("# Error updating RequestMsg payload: " + ex.getMessage());
 		}
 	}	
+	
+	public int getIndex(){
+		return ToolKit.bigEndianBytesToInt(this.getPayload(), 0);
+	}
+	
+	public int getOffset (){
+		return ToolKit.bigEndianBytesToInt(this.getPayload(), 4);
+	}
+	
+	public int getPieceLength(){
+		return ToolKit.bigEndianBytesToInt(this.getPayload(), 8);
+	}
 }

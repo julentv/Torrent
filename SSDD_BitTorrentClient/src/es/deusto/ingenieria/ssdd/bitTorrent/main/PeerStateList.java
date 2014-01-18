@@ -44,5 +44,15 @@ public class PeerStateList {
 	public int size(){
 		return this.peerStateList.size();
 	}
+	public PeerState getByAddress(String ip, int port){
+		PeerState peerState=null;
+		for(int i=0, ii=this.peerStateList.size();i<ii&&peerState==null;i++)
+		{
+			if(peerStateList.get(i).getIp().equals(ip)&&peerStateList.get(i).getPort()==port){
+				peerState=peerStateList.get(i);
+			}
+		}
+		return peerState;
+	}
 
 }

@@ -46,7 +46,7 @@ public class FileManagement {
 		try {
 			// Se abre el fichero para lectura y escritura.
 			randomAccessFile = new RandomAccessFile (this.fileName, "rw");
-			randomAccessFile.setLength(fileLength);
+			//randomAccessFile.setLength(fileLength);
 			randomAccessFile.seek(position);
 			randomAccessFile.read(read, 0, lenght);
 			//cerramos el fichero random

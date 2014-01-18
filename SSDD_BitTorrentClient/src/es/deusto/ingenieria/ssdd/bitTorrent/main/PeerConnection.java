@@ -72,11 +72,11 @@ public class PeerConnection extends Thread {
 					+ tcpSocket.getPort() + "' -> '" + new String(message)
 					+ "'");
 			int cont=0;
-			byte[] answer=null;
+			byte[] answer=new byte[0];
 			
 			//si no se recibe nada del socket esperar unos milisegundo y volver a intentar varias veces
 			do{
-				if(cont>0){
+				if(cont>=0){
 					try {
 						Thread.sleep(250);
 					} catch (InterruptedException e) {
@@ -85,10 +85,13 @@ public class PeerConnection extends Thread {
 					}
 				}
 				
+				
 				answer = new byte[in.available()];
 				in.read(answer);
-				System.out.println(" - Received data from the peer () -> '"
+				System.out.println(" -1 Received data from the peer () -> '"
 						+ new String(answer) + "'");
+				
+				
 				cont++;
 			}while(cont<5&&answer.length<1);
 			
@@ -103,7 +106,8 @@ public class PeerConnection extends Thread {
 	private void sendInterestedMessage() {
 		InterestedMsg interestedMessage = new InterestedMsg();
 		// byte[]interested={0,0,0,1,2};
-		sendMessage(interestedMessage.getBytes());
+		byte[]answer=sendMessage(interestedMessage.getBytes());
+		PeerProtocolMessage.parseMessages(answer);
 	}
 
 	public boolean handshake() {
@@ -141,13 +145,15 @@ public class PeerConnection extends Thread {
 
 	private void processMessages(ArrayList<PeerProtocolMessage> messageArray) {
 		for (int i = 0, ii = messageArray.size(); i < ii; i++) {
-			switch (messageArray.get(i).getType().getId()) {
+			switch (messageArray.get(i).getType().getId()){
 			case 0: // choke
 				// cerrar conexion
 				// guardar stado
+				System.out.println("Choke recibido");
 				break;
 			case 1: // unchoke
 				// guardo estado
+				System.out.println("Unchoke recibido");
 				break;
 
 			case 4: // have
@@ -179,7 +185,7 @@ public class PeerConnection extends Thread {
 		FragmentsInformation fragmentInformation = this.torrent
 				.getFragmentsInformation();
 		while (!fragmentInformation.downloadFinished()) {
-			
+			boolean firstLap=true;
 			// comprobar siguiente subfragmento a descargar
 			int[] pieceToAsk = fragmentInformation.pieceToAsk();
 			if (pieceToAsk != null) {
@@ -189,9 +195,11 @@ public class PeerConnection extends Thread {
 					//si se a descargado todo el fragmento notificar que lo tenemos
 				}
 				// comprobar que el peer contenga el fragmento
-				if (this.peerState.hasFragment(pieceToAsk[0])) {
+				
+				if (firstLap||this.peerState.hasFragment(pieceToAsk[0])) {
 					// bloquear el fragmento
 					if (fragmentInformation.blockFragment(pieceToAsk[1])) {
+						firstLap=false;
 						try {
 							// descargar subfragmento
 							RequestMsg requestMessage = new RequestMsg(pieceToAsk[0], pieceToAsk[1], pieceToAsk[2]);

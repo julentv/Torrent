@@ -10,9 +10,9 @@ public class Main {
 		System.out.print("Insert the name of the torrent: ");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				System.in));
-		// String torrentFileName = reader.readLine();
+		//String torrentFileName = reader.readLine();
 		//String torrentFileName = "index.txt.torrent";
-		String torrentFileName = "NINJA.png.torrent";
+		String torrentFileName = "ALB   Golden Chains (feat. The Shoes).mp3.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
 	}

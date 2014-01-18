@@ -29,6 +29,7 @@ public class TorrentClient {
 	private MetainfoFile<?> metainf;
 	private FragmentsInformation fragmentsInformation;
 	private int subfragmentLength;
+	private int uploaded;
 
 	
 	public TorrentClient() {
@@ -40,6 +41,7 @@ public class TorrentClient {
 		this.interval = 0;
 		this.metainf = null;
 		this.subfragmentLength=512;
+		this.uploaded=0;
 	}
 	
 	public int getNumberOfPieces() {
@@ -55,25 +57,31 @@ public class TorrentClient {
 	}
 
 	public void downloadTorrent(String torrentName) throws IOException {
+		
 		this.metainf = this.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
+		//Throw the thread that listens.
+		
 		//obtain the current fragment
 		int length=this.metainf.getInfo().getLength();
 		length+=4;
-		FileManagement fileMan= new FileManagement(this.metainf.getInfo().getName(), length);
+		FileManagement fileMan= new FileManagement(this.metainf.getInfo().getName(), length);		
+		int downloaded=0;
 		if(fileMan.exists()){
 			int currentFragment=fileMan.getCurrentFragment();
+			downloaded=currentFragment*this.metainf.getInfo().getPieceLength();
 			if(currentFragment>-1){
 				this.fragmentsInformation= new FragmentsInformation(this.metainf.getInfo().getLength(), this.metainf.getInfo().getPieceLength(), this.subfragmentLength, currentFragment, this.metainf.getInfo().getByteSHA1(),this.metainf.getInfo().getName());
 			}else{
 				this.fragmentsInformation= null;
+				downloaded=this.metainf.getInfo().getLength();
 			}
 		}else{
 			this.fragmentsInformation= new FragmentsInformation(this.metainf.getInfo().getLength(), this.metainf.getInfo().getPieceLength(), this.subfragmentLength, 0, this.metainf.getInfo().getByteSHA1(),this.metainf.getInfo().getName());
 		}
 		
 		if(this.fragmentsInformation!=null){
-			String trackerResponse = httprRequest(metainf, this.port, 0, 0, 62113);
+			String trackerResponse = httprRequest(metainf, this.port, 0, downloaded, 62113);
 			if (trackerResponse != null) {
 				try {
 					// Parse the response
@@ -201,7 +209,22 @@ public class TorrentClient {
 	public void setFragmentsInformation(FragmentsInformation fragmentsInformation) {
 		this.fragmentsInformation = fragmentsInformation;
 	}
-	
+
+	public int getPort() {
+		return port;
+	}
+
+	public int getUploaded() {
+		return uploaded;
+	}
+
+	public synchronized void setUploaded(int uploaded) {
+		this.uploaded = uploaded;
+	}
+
+	public PeerStateList getPeerStateList() {
+		return peerStateList;
+	}
 	
 	
 }
