@@ -145,7 +145,8 @@ public class FragmentsInformation {
 	 */
 	public synchronized boolean isCompleted(){
 		boolean isCompleted=true;
-		for(int i=0,ii=isDownloaded.length;i<ii&&isCompleted;i++){
+		int ii=isDownloaded==null?-1:isDownloaded.length;
+		for(int i=0;i<ii&&isCompleted;i++){
 			if(!isDownloaded[i]){
 				isCompleted=false;
 			}

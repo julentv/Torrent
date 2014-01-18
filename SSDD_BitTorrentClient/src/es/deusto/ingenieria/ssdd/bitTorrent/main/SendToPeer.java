@@ -38,10 +38,16 @@ public class SendToPeer extends Thread {
 		peerState=torrentClient.getPeerStateList().getByAddress(socket.getInetAddress().getHostAddress(), socket.getPort());
 		//read handhake
 			byte []received=new byte[68];
-			inputStream.read(received);			
+			System.out.println("Waiting for handshake");
+			inputStream.read(received);	
+			System.out.println("handshake received");
 			Handsake handshakeMessage=Handsake.parseStringToHandsake(new String(received));
 			//validar hash
-			if(Handsake.isValidHandsakeForBitTorrentProtocol(handshakeMessage, new String(torrentClient.getMetainf().getInfo().getInfoHash()))){
+			String torrentHash=new String(torrentClient.getMetainf().getInfo().getInfoHash());
+			if(Handsake.isValidHandsakeForBitTorrentProtocol(handshakeMessage, torrentHash)){
+				//send handshake
+				Handsake handShakeToSend= new Handsake(torrentHash, this.torrentClient.getPeerId());
+				this.outputStream.write(handShakeToSend.getBytes());
 				//enviar bitfield
 				try{
 					this.sendBitfield();

@@ -13,11 +13,13 @@ public class Listener extends Thread {
 	@Override
 	public void run() {
 		try (ServerSocket tcpServerSocket = new ServerSocket(this.torrentClient.getPort());) {
-			System.out.println(" - Waiting for connections '" + 
+			System.out.println(" - Waiting for peer connections '" + 
                     tcpServerSocket.getInetAddress().getHostAddress() + ":" + 
                     tcpServerSocket.getLocalPort() + "' ...");
 			while(true){
-				new SendToPeer(torrentClient,tcpServerSocket.accept());
+				SendToPeer sendToPeer=new SendToPeer(torrentClient,tcpServerSocket.accept());
+				sendToPeer.start();
+				System.out.println("Connection received");
 			}
 		} catch (IOException e) {
 			System.out.println("Listenining socket closed!!!");

@@ -1,4 +1,5 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,83 +32,95 @@ public class TorrentClient {
 	private int subfragmentLength;
 	private int uploaded;
 
-	
 	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
-		this.port = 8888;
+		this.port = 6666;
 		this.ip = "127.0.0.1";
 		this.peerStateList = new PeerStateList(new PeerState(this.ip,
 				this.port, 0));
 		this.interval = 0;
 		this.metainf = null;
-		this.subfragmentLength=512;
-		this.uploaded=0;
+		this.subfragmentLength = 512;
+		this.uploaded = 0;
 	}
-	
+
 	public int getNumberOfPieces() {
-		int pieces= this.metainf.getInfo().getLength()
+		int pieces = this.metainf.getInfo().getLength()
 				/ this.metainf.getInfo().getPieceLength();
-		if(this.metainf.getInfo().getLength()
-				% this.metainf.getInfo().getPieceLength()!=0)
-		{
-			pieces+=1;
+		if (this.metainf.getInfo().getLength()
+				% this.metainf.getInfo().getPieceLength() != 0) {
+			pieces += 1;
 		}
 		return pieces;
-		
+
 	}
 
 	public void downloadTorrent(String torrentName) throws IOException {
-		
+
 		this.metainf = this.obtainMetaInfo(torrentName);
 		System.out.println(metainf.toString());
-		//Throw the thread that listens.
-		
-		//obtain the current fragment
-		int length=this.metainf.getInfo().getLength();
-		length+=4;
-		FileManagement fileMan= new FileManagement(this.metainf.getInfo().getName(), length);		
-		int downloaded=0;
-		if(fileMan.exists()){
-			int currentFragment=fileMan.getCurrentFragment();
-			downloaded=currentFragment*this.metainf.getInfo().getPieceLength();
-			if(currentFragment>-1){
-				this.fragmentsInformation= new FragmentsInformation(this.metainf.getInfo().getLength(), this.metainf.getInfo().getPieceLength(), this.subfragmentLength, currentFragment, this.metainf.getInfo().getByteSHA1(),this.metainf.getInfo().getName());
-			}else{
-				this.fragmentsInformation= null;
-				downloaded=this.metainf.getInfo().getLength();
-			}
-		}else{
-			this.fragmentsInformation= new FragmentsInformation(this.metainf.getInfo().getLength(), this.metainf.getInfo().getPieceLength(), this.subfragmentLength, 0, this.metainf.getInfo().getByteSHA1(),this.metainf.getInfo().getName());
-		}
-		
-		if(this.fragmentsInformation!=null){
-			String trackerResponse = httprRequest(metainf, this.port, 0, downloaded, 62113);
-			if (trackerResponse != null) {
-				try {
-					// Parse the response
-					MetainfoStringHandler mih = new MetainfoStringHandler(
-							trackerResponse);
-					// Set the local values with the received information
-					this.interval = mih.getInterval();
-					this.peerStateList = mih.getPeerStateArray(this
-							.getNumberOfPieces(), new PeerState(this.ip, this.port,
-									this.getNumberOfPieces()));
-					// connect to the peers
-					//DE MOMENTO PARA UN SOLO PEER
-					PeerConnection peerConnection = new PeerConnection(this,this.peerStateList.get(0));
-					peerConnection.start();
-				} catch (Exception e) {
-					System.out.println("Can't parse the tracker response");
-					e.printStackTrace();
-				}
-
+		// Throw the thread that listens.
+		Listener listener = new Listener(this);
+		// listener.start();
+		// obtain the current fragment
+		int length = this.metainf.getInfo().getLength();
+		length += 4;
+		FileManagement fileMan = new FileManagement(this.metainf.getInfo()
+				.getName(), length);
+		int downloaded = 0;
+		if (fileMan.exists()) {
+			int currentFragment = fileMan.getCurrentFragment();
+			downloaded = currentFragment
+					* this.metainf.getInfo().getPieceLength();
+			if (currentFragment > -1) {
+				this.fragmentsInformation = new FragmentsInformation(
+						this.metainf.getInfo().getLength(), this.metainf
+								.getInfo().getPieceLength(),
+						this.subfragmentLength, currentFragment, this.metainf
+								.getInfo().getByteSHA1(), this.metainf
+								.getInfo().getName());
 			} else {
-				System.out.println("Can't connect to any tracker");
+				this.fragmentsInformation = new FragmentsInformation(
+						this.metainf.getInfo().getLength(), this.metainf
+								.getInfo().getPieceLength(),
+						this.subfragmentLength, -1, this.metainf.getInfo()
+								.getByteSHA1(), this.metainf.getInfo()
+								.getName());
+				downloaded = this.metainf.getInfo().getLength();
 			}
-		}else{
-			System.out.println("The file is already dowloaded!");
+		} else {
+			this.fragmentsInformation = new FragmentsInformation(this.metainf
+					.getInfo().getLength(), this.metainf.getInfo()
+					.getPieceLength(), this.subfragmentLength, 0, this.metainf
+					.getInfo().getByteSHA1(), this.metainf.getInfo().getName());
 		}
-		
+
+		String trackerResponse = httprRequest(metainf, this.port, 0,
+				downloaded, 62113);
+		if (trackerResponse != null) {
+			try {
+				// Parse the response
+				MetainfoStringHandler mih = new MetainfoStringHandler(
+						trackerResponse);
+				// Set the local values with the received information
+				this.interval = mih.getInterval();
+				this.peerStateList = mih.getPeerStateArray(this
+						.getNumberOfPieces(), new PeerState(this.ip, this.port,
+						this.getNumberOfPieces()));
+				// connect to the peers
+				// DE MOMENTO PARA UN SOLO PEER
+				PeerConnection peerConnection = new PeerConnection(this,
+						this.peerStateList.get(0));
+				peerConnection.start();
+			} catch (Exception e) {
+				System.out.println("Can't parse the tracker response");
+				e.printStackTrace();
+			}
+
+		} else {
+			System.out.println("Can't connect to any tracker");
+		}
+
 	}
 
 	/**
@@ -206,7 +219,9 @@ public class TorrentClient {
 	public FragmentsInformation getFragmentsInformation() {
 		return fragmentsInformation;
 	}
-	public void setFragmentsInformation(FragmentsInformation fragmentsInformation) {
+
+	public void setFragmentsInformation(
+			FragmentsInformation fragmentsInformation) {
 		this.fragmentsInformation = fragmentsInformation;
 	}
 
@@ -225,6 +240,5 @@ public class TorrentClient {
 	public PeerStateList getPeerStateList() {
 		return peerStateList;
 	}
-	
-	
+
 }
