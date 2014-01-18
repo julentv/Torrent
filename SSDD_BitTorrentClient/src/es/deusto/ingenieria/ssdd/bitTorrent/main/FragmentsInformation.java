@@ -76,6 +76,10 @@ public class FragmentsInformation {
 	public int getNumberOfFragments() {
 		return numberOfFragments;
 	}
+	
+	public int getFragmentLength() {
+		return fragmentLength;
+	}
 	private int numberOfPieces(int big, int small){
 		int result=big/small;
 		if(big%small!=0){

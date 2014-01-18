@@ -96,7 +96,7 @@ public class TorrentClient {
 		}
 
 		String trackerResponse = httprRequest(metainf, this.port, 0,
-				downloaded, 62113);
+				downloaded, this.metainf.getInfo().getLength()-downloaded);
 		if (trackerResponse != null) {
 			try {
 				// Parse the response
@@ -109,9 +109,14 @@ public class TorrentClient {
 						this.getNumberOfPieces()));
 				// connect to the peers
 				// DE MOMENTO PARA UN SOLO PEER
-				PeerConnection peerConnection = new PeerConnection(this,
-						this.peerStateList.get(0));
-				peerConnection.start();
+				if(downloaded<this.metainf.getInfo().getLength()){
+					PeerConnection peerConnection = new PeerConnection(this,
+							this.peerStateList.get(0));
+					peerConnection.start();
+				}else{
+					System.out.println("Ya esta descargado.");
+				}
+				
 			} catch (Exception e) {
 				System.out.println("Can't parse the tracker response");
 				e.printStackTrace();
