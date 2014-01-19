@@ -12,6 +12,7 @@ import es.deusto.ingenieria.ssdd.bitTorrent.file.FileManagement;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.BitfieldMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.ChokeMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.Handsake;
+import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.HaveMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.PeerProtocolMessage;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.PieceMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.RequestMsg;
@@ -55,8 +56,10 @@ public class SendToPeer extends Thread {
 					PeerProtocolMessage message=this.readNormalMessage();
 					//comprobar que se ha recibido un interested
 					if(message.getType().equals(PeerProtocolMessage.Type.INTERESTED)){
+						this.peerState.setPeer_interested(true);
 						//unchoke
 						this.outputStream.write(new UnChokeMsg().getBytes());
+						this.peerState.setAm_choking(false);
 						boolean continueReading=true;
 						while(continueReading){
 							message=this.readNormalMessage();
@@ -91,9 +94,6 @@ public class SendToPeer extends Thread {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-
-
 		}
 	}
 	
@@ -110,20 +110,24 @@ public class SendToPeer extends Thread {
 			position=(((RequestMsg) message).getIndex()*this.torrentClient.getFragmentsInformation().getFragmentLength())+((RequestMsg) message).getOffset();
 			if((position+((RequestMsg) message).getOffset())>this.torrentClient.getMetainf().getInfo().getLength()){
 				
-				byte[]bytes=fm.readFromFile(position, position);
+				byte[]bytes=fm.readFromFile(position, ((RequestMsg) message).getPieceLength());
 				//send piece
 				PieceMsg pieceMsg= new PieceMsg (((RequestMsg) message).getIndex(), ((RequestMsg) message).getOffset(), bytes);
 				this.outputStream.write(pieceMsg.getBytes());
+				this.torrentClient.setUploaded(this.torrentClient.getUploaded()+((RequestMsg) message).getPieceLength());
 			}else{
 				accepted=false;
 			}
 			
-			
-			
-			
-			
 		}else if(message.getType().equals(PeerProtocolMessage.Type.HAVE)){
-			
+			if(this.peerState==null){
+				peerState=torrentClient.getPeerStateList().getByAddress(socket.getInetAddress().getHostAddress(), socket.getPort());
+			}
+			if(this.peerState!=null){
+				//actualize the bitfield of the peerState when a have message arrives
+				int pieceNumber=ToolKit.bigEndianBytesToInt(((HaveMsg)message).getPayload(), 0);
+				peerState.getBitfield()[pieceNumber]=1;
+			}
 		}else{
 			accepted=false;
 		}

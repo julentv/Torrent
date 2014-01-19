@@ -233,7 +233,7 @@ public class TorrentClient {
 			}
 			String trackerResponse = httprRequest(metainf, this.port, this.uploaded,
 					downloaded, this.metainf.getInfo().getLength()-downloaded);
-			System.out.println("Request sent to the Tracker. Response: "+trackerResponse);
+			System.out.println("Request sent to the Tracker. Response("+downloaded+","+this.uploaded+"): "+trackerResponse);
 			// Parse the response
 			MetainfoStringHandler mih = new MetainfoStringHandler(
 					trackerResponse);

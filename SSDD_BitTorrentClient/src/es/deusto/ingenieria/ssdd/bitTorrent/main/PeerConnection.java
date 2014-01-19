@@ -104,6 +104,7 @@ public class PeerConnection extends Thread {
 	}
 
 	private void sendInterestedMessage() {
+		this.peerState.setAm_interested(true);
 		InterestedMsg interestedMessage = new InterestedMsg();
 		// byte[]interested={0,0,0,1,2};
 		byte[]answer=sendMessage(interestedMessage.getBytes());
@@ -149,10 +150,12 @@ public class PeerConnection extends Thread {
 			case 0: // choke
 				// cerrar conexion
 				// guardar stado
+				this.peerState.setPeer_choking(true);
 				System.out.println("Choke recibido");
 				break;
 			case 1: // unchoke
 				// guardo estado
+				this.peerState.setPeer_choking(false);
 				System.out.println("Unchoke recibido");
 				break;
 
