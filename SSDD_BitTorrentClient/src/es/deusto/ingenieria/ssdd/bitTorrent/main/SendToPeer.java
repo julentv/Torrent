@@ -56,10 +56,19 @@ public class SendToPeer extends Thread {
 					PeerProtocolMessage message=this.readNormalMessage();
 					//comprobar que se ha recibido un interested
 					if(message.getType().equals(PeerProtocolMessage.Type.INTERESTED)){
-						this.peerState.setPeer_interested(true);
+						if(this.peerState!=null){
+							peerState=torrentClient.getPeerStateList().getByAddress(socket.getInetAddress().getHostAddress(), socket.getPort());						
+						}
+						if(this.peerState!=null){
+							this.peerState.setPeer_interested(true);
+						}
+						
 						//unchoke
 						this.outputStream.write(new UnChokeMsg().getBytes());
-						this.peerState.setAm_choking(false);
+						if(this.peerState!=null){
+							this.peerState.setAm_choking(false);
+						}
+						
 						boolean continueReading=true;
 						while(continueReading){
 							message=this.readNormalMessage();
