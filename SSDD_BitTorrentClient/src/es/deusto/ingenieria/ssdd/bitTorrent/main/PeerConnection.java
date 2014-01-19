@@ -35,6 +35,7 @@ public class PeerConnection extends Thread {
 	private DataInputStream in;
 	private DataOutputStream out;
 	private int lastFragment=-1;
+	private boolean stop=false;
 
 	public PeerConnection(TorrentClient torrentClient, PeerState peer) {
 		this.torrent = torrentClient;
@@ -67,11 +68,12 @@ public class PeerConnection extends Thread {
 
 	private byte[] sendMessage(byte[] message) {
 		try {
-			out.write(message);
 			System.out.println(" - Sent data to '"
 					+ tcpSocket.getInetAddress().getHostAddress() + ":"
 					+ tcpSocket.getPort() + "' -> '" + new String(message)
 					+ "'");
+			out.write(message);
+			
 			int cont=0;
 			byte[] answer=new byte[0];
 			
@@ -100,6 +102,7 @@ public class PeerConnection extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			this.stop=true;
 			return null;
 		}
 	}
@@ -188,7 +191,7 @@ public class PeerConnection extends Thread {
 	private void request() {
 		FragmentsInformation fragmentInformation = this.torrent
 				.getFragmentsInformation();
-		while (!fragmentInformation.downloadFinished()) {
+		while (!fragmentInformation.downloadFinished()&&!this.stop) {
 			boolean firstLap=true;
 			// comprobar siguiente subfragmento a descargar
 			int[] pieceToAsk = fragmentInformation.pieceToAsk();
