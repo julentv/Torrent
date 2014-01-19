@@ -1,14 +1,13 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.file;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
-import es.deusto.ingenieria.ssdd.bitTorrent.main.FragmentsInformation;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
+/**
+ * This class enables the reading and writing of the file. 
+  */
 public class FileManagement {
 
 	private String fileName;
@@ -19,16 +18,23 @@ public class FileManagement {
 		this.fileName= "data/"+fileName;
 	}
 	
+	/**
+	 * This method store bytes in the file.
+	 * @param position corresponds to the start point to write bytes.
+	 * @param bytesToStore array of bytes to store in the file
+	 */
 	public void storeInFile(long position, byte[] bytesToStore){
 		
 		try {
-			// Se abre el fichero para lectura y escritura.
+			// Open the file with read and write permissions.
 			randomAccessFile = new RandomAccessFile (this.fileName, "rw");
+			//Set the length of the file
 			randomAccessFile.setLength(fileLength);
+			//Go to the position to start writing
 			randomAccessFile.seek(position);
-			// Escribimos los bytes de la pieza a partir de esa posicion
+			// Write the bytes
 			randomAccessFile.write(bytesToStore);
-			//cerramos el fichero random
+			//close the file
 			randomAccessFile.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -36,20 +42,34 @@ public class FileManagement {
 		} 
 	}
 	
+	/**
+	 * This method store the bytes in the file and at the end one integer that indicates the 
+	 * last fragment downloaded
+	 * @param position corresponds to the start point to write bytes.
+	 * @param bytesToStore array of bytes to store in the file
+	 * @param last integer that indicates the last download fragment
+	 */
 	public void storeInFileWithLast(int position, byte[] bytesToStore,int last){
 		storeInFile(position,bytesToStore);
 		storeInFile(this.fileLength-4,ToolKit.intToBigEndianBytes(last, new byte[4], 0));
 	}
 	
+	/**
+	 * This method read bytes from the file. 
+	 * @param position the start position to start reading
+	 * @param lenght the number of bytes to read
+	 * @return array of bytes read
+	 */
 	public byte[] readFromFile(int position, int lenght){
 		byte[] read= new byte[lenght];
 		try {
-			// Se abre el fichero para lectura y escritura.
+			// open the file with read permission
 			randomAccessFile = new RandomAccessFile (this.fileName, "r");
-			//randomAccessFile.setLength(fileLength);
+			//Go to the position to start reading
 			randomAccessFile.seek(position);
+			//read the bytes
 			randomAccessFile.read(read, 0, lenght);
-			//cerramos el fichero random
+			//close the file
 			randomAccessFile.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -58,15 +78,25 @@ public class FileManagement {
 		
 		return read;
 	}
+	
+	/**
+	 * This method say if the file is completed or not.
+	 * @return true if it is completed and false otherwise
+	 */
 	public boolean isCompleted(){
 		File file = new File(this.fileName);
-		long noseque=file.length();
 		if(file.length()==this.fileLength){
 			return false;
 		}else{
 			return true;
 		}
 	}
+	
+	/**
+	 * This method get the last integer from the file that corresponds to the
+	 * last download fragment
+	 * @return -1 if the file is completed and the last download fragment otherwise
+	 */
 	public int getCurrentFragment(){
 		if(this.isCompleted()){
 			return -1;
@@ -74,6 +104,11 @@ public class FileManagement {
 			return ToolKit.bigEndianBytesToInt(readFromFile(this.fileLength-4,4), 0);
 		}
 	}
+	
+	/**
+	 * This method say if the file exists or not.
+	 * @return true if it exists and false otherwise.
+	 */
 	public boolean exists(){
 		File file = new File(this.fileName);
 		if(file.exists()){

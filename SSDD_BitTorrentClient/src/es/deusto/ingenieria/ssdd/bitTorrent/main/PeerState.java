@@ -1,15 +1,17 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
+/**
+ * This class has all information relative to a peer.
+ *
+ */
 public class PeerState {
 	private String ip;
 	private int port;
-	//yo a el
 	private boolean am_choking;
 	private boolean am_interested;
-	//el a mi
 	private boolean peer_choking;
 	private boolean peer_interested;
-	//los fragmentos que tiene o no
+	//fragments that the peer has
 	private byte[] bitfield;
 	
 	public PeerState (String ip, int port, int numberOfPieces){
@@ -67,19 +69,24 @@ public class PeerState {
 	}
 
 	/**
-	 * El tamaño del array de bytes introducido debe ser del mismo tamaño que el ya existente.
+	 * THis method set the biftield of the peer
+	 * The lenght of the new bitfield array must be equals to the existent one.
 	 * @param bitfield
 	 */
 	public void setBitfield(byte[] bitfield) {
 		
-		//nada, esto es todo mentira. Si manda despues los have el bitfield sololo envia con un cero
 		if(bitfield.length==this.bitfield.length){
 			this.bitfield = bitfield;
-		}else{
-			//throw new IllegalArgumentException("The length of the array is illegal. Must be '"+this.bitfield.length+"' but is '"+bitfield.length+"'");
 		}
 		
 	}
+	
+	/**
+	 * This method update one position in the bitfield of the peer. 
+	 * This is done when a peer informs that it downloads another fragment.
+	 * @param position index of the download fragment
+	 * @param value 0 or 1 depending if the peer has download or not the fragment.
+	 */
 	public void updateBitfieldPosition(int position, byte value){
 		this.bitfield[position]=value;		
 	}
@@ -87,6 +94,11 @@ public class PeerState {
 		return this.bitfield[position];
 	}
 	
+	/**
+	 * This method checks if the peer has one specific fragment or not.
+	 * @param position index of the fragment
+	 * @return true if the peer has the fragment and false otherwise.
+	 */
 	public boolean hasFragment(int position){
 		if(this.bitfield[position]==0){
 			return false;
@@ -95,6 +107,12 @@ public class PeerState {
 		}
 	
 	}
+	
+	/**
+	 * This method compare two peers checking the ip and port.
+	 * @param peerState one peer
+	 * @return true if they are equals or false otherwise
+	 */
 	public boolean equals(PeerState peerState){
 		if(this.ip.equals(peerState.getIp())&&this.port==peerState.getPort()){
 			return true;
