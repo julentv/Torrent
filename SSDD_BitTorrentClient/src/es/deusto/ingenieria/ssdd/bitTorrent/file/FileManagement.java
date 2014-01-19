@@ -23,7 +23,7 @@ public class FileManagement {
 		
 		try {
 			// Se abre el fichero para lectura y escritura.
-			randomAccessFile = new RandomAccessFile (this.fileName, "r");
+			randomAccessFile = new RandomAccessFile (this.fileName, "rw");
 			randomAccessFile.setLength(fileLength);
 			randomAccessFile.seek(position);
 			// Escribimos los bytes de la pieza a partir de esa posicion
