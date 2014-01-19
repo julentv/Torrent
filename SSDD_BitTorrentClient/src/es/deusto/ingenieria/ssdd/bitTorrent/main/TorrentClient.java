@@ -37,7 +37,8 @@ public class TorrentClient {
 	public TorrentClient() {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 6666;
-		this.ip = "127.0.0.1";
+		//this.ip = "127.0.0.1";
+		this.ip = "192.168.1.129";
 		this.peerStateList = new PeerStateList(new PeerState(this.ip,
 				this.port, 0));
 		this.interval = 0;

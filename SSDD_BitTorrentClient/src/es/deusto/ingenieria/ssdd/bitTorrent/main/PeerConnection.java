@@ -40,6 +40,7 @@ public class PeerConnection extends Thread {
 		this.torrent = torrentClient;
 		this.peerState = peer;
 		try {
+			System.out.println("Connecting to -->"+peerState.getIp()+":"+peerState.getPort());
 			this.tcpSocket = new Socket(peerState.getIp(), peerState.getPort());
 			in = new DataInputStream(tcpSocket.getInputStream());
 			out = new DataOutputStream(tcpSocket.getOutputStream());

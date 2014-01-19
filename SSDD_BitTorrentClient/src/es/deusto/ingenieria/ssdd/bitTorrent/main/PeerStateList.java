@@ -5,8 +5,10 @@ import java.util.ArrayList;
 public class PeerStateList {
 	private ArrayList<PeerState> peerStateList;
 	private PeerState myself;
+	private PeerState myselfLocal;
 	public PeerStateList(PeerState myself){
 		this.myself=myself;
+		this.myselfLocal=new PeerState("127.0.0.1", myself.getPort(), myself.getBitfield().length);
 		this.peerStateList=new ArrayList<PeerState>();
 	}
 	public boolean add(PeerState peerState){
@@ -22,7 +24,7 @@ public class PeerStateList {
 		}
 	}
 	private boolean isMyself(PeerState peerState){
-		if(peerState.equals(this.myself)){
+		if(peerState.equals(this.myself)||peerState.equals(this.myselfLocal)){
 			return true;
 		}else{
 			return false;
