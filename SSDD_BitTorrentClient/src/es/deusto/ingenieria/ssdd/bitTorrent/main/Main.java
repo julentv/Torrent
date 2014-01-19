@@ -12,7 +12,7 @@ public class Main {
 				System.in));
 		//String torrentFileName = reader.readLine();
 		//String torrentFileName = "index.txt.torrent";
-		String torrentFileName = "share.png.torrent";
+		String torrentFileName = "ALB   Golden Chains (feat. The Shoes).mp3.torrent";
 		TorrentClient torrent = new TorrentClient();
 		torrent.downloadTorrent(torrentFileName);
 	}
