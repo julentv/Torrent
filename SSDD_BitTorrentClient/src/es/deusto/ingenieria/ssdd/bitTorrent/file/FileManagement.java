@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
 /**
- * This class enables the reading and writing of the file. 
+ * This class enables the reading and writing of the file. a
   */
 public class FileManagement {
 
