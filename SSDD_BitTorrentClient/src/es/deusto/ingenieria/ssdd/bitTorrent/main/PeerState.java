@@ -1,6 +1,5 @@
 package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
-/** CUIDADO CON SINCRONIZAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**/
 public class PeerState {
 	private String ip;
 	private int port;

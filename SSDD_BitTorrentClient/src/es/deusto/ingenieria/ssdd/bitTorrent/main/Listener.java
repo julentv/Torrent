@@ -16,6 +16,7 @@ public class Listener extends Thread {
 			System.out.println(" - Waiting for peer connections '" + 
                     tcpServerSocket.getInetAddress().getHostAddress() + ":" + 
                     tcpServerSocket.getLocalPort() + "' ...");
+			this.torrentClient.setIp(tcpServerSocket.getInetAddress().getHostAddress());
 			while(true){
 				SendToPeer sendToPeer=new SendToPeer(torrentClient,tcpServerSocket.accept());
 				sendToPeer.start();

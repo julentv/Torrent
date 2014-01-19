@@ -38,7 +38,7 @@ public class TorrentClient {
 		this.peerId = ToolKit.generatePeerId();
 		this.port = 6666;
 		//this.ip = "127.0.0.1";
-		this.ip = "192.168.1.129";
+		//this.ip = "192.168.1.129";
 		this.peerStateList = new PeerStateList(new PeerState(this.ip,
 				this.port, 0));
 		this.interval = 0;
@@ -64,7 +64,7 @@ public class TorrentClient {
 		System.out.println(metainf.toString());
 		// Throw the thread that listens.
 		Listener listener = new Listener(this);
-		// listener.start();
+		listener.start();
 		// obtain the current fragment
 		int length = this.metainf.getInfo().getLength();
 		length += 4;
@@ -113,20 +113,18 @@ public class TorrentClient {
 				// connect to the peers
 				// DE MOMENTO PARA UN SOLO PEER
 				if(downloaded<this.metainf.getInfo().getLength()){
-					PeerConnection peerConnection = new PeerConnection(this,
-							this.peerStateList.get(0));
-					peerConnection.start();
-					
-					//send messages to the tracker periodically.
-					trackerUpdate();
-					
-					
+					for(int i=0,ii=this.peerStateList.size();i<ii;i++){
+						PeerConnection peerConnection = new PeerConnection(this,
+								this.peerStateList.get(i));
+						peerConnection.start();
+					}
 					
 					
 				}else{
 					System.out.println("Ya esta descargado.");
 				}
-				
+				//send messages to the tracker periodically.
+				trackerUpdate();
 			} catch (Exception e) {
 				System.out.println("Can't parse the tracker response");
 				e.printStackTrace();
@@ -180,7 +178,7 @@ public class TorrentClient {
 		// Intenta conectarse a todos los trackers, hasta que se conecta a uno
 		for (String announce : announceList) {
 			try {
-				System.out.println("Trying to connect to: " + announce);
+				//System.out.println("Trying to connect to: " + announce);
 				String urlText = announce + "?info_hash="
 						+ metainf.getInfo().getUrlInfoHash() + "&peer_id="
 						+ this.peerId + "&port=" + port + "&uploaded="
@@ -212,7 +210,7 @@ public class TorrentClient {
 
 				// print result
 				result = response.toString();
-				System.out.println(response.toString());
+				//System.out.println(response.toString());
 				break;
 			} catch (Exception e) {
 				System.out.println("Connection error to: " + announce);
@@ -234,7 +232,7 @@ public class TorrentClient {
 			}
 			String trackerResponse = httprRequest(metainf, this.port, this.uploaded,
 					downloaded, this.metainf.getInfo().getLength()-downloaded);
-			System.out.println("Request sent to the Tracker. Response("+downloaded+","+this.uploaded+"): "+trackerResponse);
+			//System.out.println("Request sent to the Tracker. Response("+downloaded+","+this.uploaded+"): "+trackerResponse);
 			// Parse the response
 			MetainfoStringHandler mih = new MetainfoStringHandler(
 					trackerResponse);
@@ -285,5 +283,14 @@ public class TorrentClient {
 	public PeerStateList getPeerStateList() {
 		return peerStateList;
 	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+	
 
 }
