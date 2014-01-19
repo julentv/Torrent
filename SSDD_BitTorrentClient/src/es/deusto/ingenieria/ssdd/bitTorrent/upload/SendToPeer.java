@@ -1,4 +1,4 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.upload;
 
 
 import java.io.IOException;
@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import es.deusto.ingenieria.ssdd.bitTorrent.file.FileManagement;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.FragmentsInformation;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.PeerState;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.TorrentClient;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.BitfieldMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.ChokeMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.Handsake;

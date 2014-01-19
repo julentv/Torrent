@@ -1,4 +1,4 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.download;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.FragmentsInformation;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.PeerState;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.ReceivedMessageException;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.TorrentClient;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.Handsake;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.HaveMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.InterestedMsg;

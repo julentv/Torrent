@@ -1,4 +1,4 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.globalInformation;
 
 /**
  * This class has all information relative to a peer.

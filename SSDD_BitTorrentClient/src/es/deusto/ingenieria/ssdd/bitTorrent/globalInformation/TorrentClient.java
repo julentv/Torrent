@@ -1,4 +1,4 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.globalInformation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,11 +7,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+
+import es.deusto.ingenieria.ssdd.bitTorrent.download.PeerConnection;
 import es.deusto.ingenieria.ssdd.bitTorrent.file.FileManagement;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.MetainfoFile;
+import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.MetainfoStringHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MetainfoFileHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.MultipleFileHandler;
 import es.deusto.ingenieria.ssdd.bitTorrent.metainfo.handler.SingleFileHandler;
+import es.deusto.ingenieria.ssdd.bitTorrent.upload.Listener;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
 /**

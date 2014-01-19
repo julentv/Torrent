@@ -1,4 +1,4 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.globalInformation;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;

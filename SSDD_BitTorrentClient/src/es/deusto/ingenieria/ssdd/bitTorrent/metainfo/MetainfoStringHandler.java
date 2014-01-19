@@ -1,9 +1,11 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.metainfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import es.deusto.ingenieria.ssdd.bitTorrent.bencoding.Bencoder;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.PeerState;
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.PeerStateList;
 /**
  * Class that parses the tracker response
  * 
@@ -36,6 +38,7 @@ public class MetainfoStringHandler {
 	 * @param myself Peer with the ip and port of the own application in order to not introduce the peers with the same ip an port into the list.
 	 * @return The PeerStateList with all the PeerStates containing the peer's information.
 	 */
+	@SuppressWarnings("rawtypes")
 	public PeerStateList getPeerStateArray(int numberOfPieces, PeerState myself){
 		PeerStateList peerStateArray= new PeerStateList(myself);
 		for(HashMap peer:peers){

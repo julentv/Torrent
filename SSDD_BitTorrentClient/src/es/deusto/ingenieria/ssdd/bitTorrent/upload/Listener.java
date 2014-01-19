@@ -1,7 +1,9 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.upload;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.TorrentClient;
 
 /**
  * Thread that opens the tcp socket to get the peers requests

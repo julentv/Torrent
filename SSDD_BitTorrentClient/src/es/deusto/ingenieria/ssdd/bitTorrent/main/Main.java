@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import es.deusto.ingenieria.ssdd.bitTorrent.globalInformation.TorrentClient;
+
 /**
  * This is the main class of the torrent client. From here the peer can start downloading
  * a file.

@@ -1,4 +1,4 @@
-package es.deusto.ingenieria.ssdd.bitTorrent.main;
+package es.deusto.ingenieria.ssdd.bitTorrent.globalInformation;
 
 /**
  * Exception to indicate tha the received message is not correct.
