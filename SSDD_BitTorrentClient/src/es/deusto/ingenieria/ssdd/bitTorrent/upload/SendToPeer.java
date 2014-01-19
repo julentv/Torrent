@@ -144,6 +144,7 @@ public class SendToPeer extends Thread {
 				byte[]bytes=fm.readFromFile(position, ((RequestMsg) message).getPieceLength());
 				//send piece
 				PieceMsg pieceMsg= new PieceMsg (((RequestMsg) message).getIndex(), ((RequestMsg) message).getOffset(), bytes);
+				System.out.println("Sending fragment: "+((RequestMsg) message).getIndex());
 				this.outputStream.write(pieceMsg.getBytes());
 				this.torrentClient.setUploaded(this.torrentClient.getUploaded()+((RequestMsg) message).getPieceLength());
 			}else{
