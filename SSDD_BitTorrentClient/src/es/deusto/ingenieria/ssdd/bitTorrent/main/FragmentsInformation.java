@@ -2,12 +2,14 @@ package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-
 import es.deusto.ingenieria.ssdd.bitTorrent.file.FileManagement;
-import es.deusto.ingenieria.ssdd.bitTorrent.util.StringUtils;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
-
+/**
+ * Class with all the important information of the downloading file
+ * @author JulenTV
+ *
+ */
 public class FragmentsInformation {
 	//-1 if is finished
 	private int currentFragment;
@@ -165,6 +167,10 @@ public class FragmentsInformation {
 		return currentFragment+1==numberOfFragments;
 	}
 	
+	/**
+	 * Indicates if the download is finished
+	 * @return
+	 */
 	public boolean downloadFinished(){
 		boolean finished=false;
 		if(currentFragment<0||(this.isLastPiece()&&this.isCompleted())){
@@ -206,8 +212,12 @@ public class FragmentsInformation {
 		}
 	}
 	
-	
-	/*METODOS SIN IMPLEMENTAR*/
+	/**
+	 * Generates a hash from the byte array obtain as a parameter. Then validates it with the one 
+	 * obtain from the torrent file
+	 * @param fullArray
+	 * @return true if the hashes are equals.
+	 */
 	private boolean validateHash(byte[]fullArray){
 		byte[]generatedHash=ToolKit.generateSHA1Hash(fullArray);
 		String generatedHashString=new String(generatedHash);
@@ -224,6 +234,11 @@ public class FragmentsInformation {
 		}
 		return false;
 	}
+	
+	/**
+	 * Concatenates all the subfragments of one fragment in order to generate the fragment.
+	 * @return the fragment obtained from all the subfragments
+	 */
 	private byte[] concatSubFragments(){
 		byte[]fullArray;
 		if(this.isLastPiece()){
@@ -240,6 +255,10 @@ public class FragmentsInformation {
 		
 		return fullArray;
 	}
+	/**
+	 * Saves the fragment into the file.
+	 * @param bytes corresponding to the fragment to be saved
+	 */
 	private void saveToFile(byte[]bytes){
 		if(!this.isLastPiece()){
 			FileManagement fileManagement= new FileManagement(this.fileName, this.fileLength+4);

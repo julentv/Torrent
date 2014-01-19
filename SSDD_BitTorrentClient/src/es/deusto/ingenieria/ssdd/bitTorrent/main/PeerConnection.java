@@ -2,30 +2,23 @@ package es.deusto.ingenieria.ssdd.bitTorrent.main;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import com.sun.media.sound.Toolkit;
-
-import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.BitfieldMsg;
-import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.CancelMsg;
-import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.ChokeMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.Handsake;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.HaveMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.InterestedMsg;
-import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.NotInterestedMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.PeerProtocolMessage;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.PieceMsg;
-import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.PortMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.RequestMsg;
-import es.deusto.ingenieria.ssdd.bitTorrent.peer.protocol.messages.UnChokeMsg;
 import es.deusto.ingenieria.ssdd.bitTorrent.util.ToolKit;
 
+/**
+ * Class for the managing of every connection with the peers that are going to
+ * send fragments of the file to download
+ *
+ */
 public class PeerConnection extends Thread {
 	// this is the peer we are going to connect to
 	private PeerState peerState;
@@ -41,6 +34,7 @@ public class PeerConnection extends Thread {
 		this.torrent = torrentClient;
 		this.peerState = peer;
 		try {
+			//open the connection
 			System.out.println("Connecting to -->"+peerState.getIp()+":"+peerState.getPort());
 			this.tcpSocket = new Socket(peerState.getIp(), peerState.getPort());
 			in = new DataInputStream(tcpSocket.getInputStream());
@@ -53,7 +47,20 @@ public class PeerConnection extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	public void run() {
+		try {
+			connectToPeer();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
+	/**
+	 * Initial method that manages the normal flow of the connection.
+	 * @throws IOException
+	 */
 	private void connectToPeer() throws IOException {
 
 		if (handshake()) {
@@ -65,7 +72,12 @@ public class PeerConnection extends Thread {
 		out.close();
 		tcpSocket.close();
 	}
-
+	
+	/**
+	 * Sends a message to the peer and return the obtained response.
+	 * @param message to send.
+	 * @return the response of the peer.
+	 */
 	private byte[] sendMessage(byte[] message) {
 		try {
 			System.out.println(" - Sent data to '"
@@ -78,6 +90,7 @@ public class PeerConnection extends Thread {
 			byte[] answer=new byte[0];
 			
 			//si no se recibe nada del socket esperar unos milisegundo y volver a intentar varias veces
+			//if we receive nothing from the socket wait some milliseconds and try again.
 			do{
 				if(cont>=0){
 					try {
@@ -87,26 +100,24 @@ public class PeerConnection extends Thread {
 						e.printStackTrace();
 					}
 				}
-				
-				
 				answer = new byte[in.available()];
 				in.read(answer);
-				System.out.println(" -1 Received data from the peer () -> '"
-						+ new String(answer) + "'");
-				
-				
+				//System.out.println(" -1 Received data from the peer () -> '"
+				//		+ new String(answer) + "'");
 				cont++;
 			}while(cont<5&&answer.length<1);
 			
 			return answer;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			this.stop=true;
 			return null;
 		}
 	}
 
+	/**
+	 * Sends the interested message to the peer.
+	 */
 	private void sendInterestedMessage() {
 		this.peerState.setAm_interested(true);
 		InterestedMsg interestedMessage = new InterestedMsg();
@@ -115,8 +126,11 @@ public class PeerConnection extends Thread {
 		PeerProtocolMessage.parseMessages(answer);
 	}
 
+	/**
+	 * Manages the handshake process with the peer.
+	 * @return true if everything went right.
+	 */
 	public boolean handshake() {
-
 		// create the handshake message
 		Handsake handshakeMessage = new Handsake(new String(this.torrent
 				.getMetainf().getInfo().getInfoHash()),
@@ -148,58 +162,58 @@ public class PeerConnection extends Thread {
 
 	}
 
+	/**
+	 * Processes the received messages acting in consequence.
+	 * @param messageArray all the messages to procces
+	 */
 	private void processMessages(ArrayList<PeerProtocolMessage> messageArray) {
 		for (int i = 0, ii = messageArray.size(); i < ii; i++) {
 			switch (messageArray.get(i).getType().getId()){
 			case 0: // choke
-				// cerrar conexion
-				// guardar stado
+				// save the state and close the connection
 				this.peerState.setPeer_choking(true);
 				System.out.println("Choke recibido");
 				break;
 			case 1: // unchoke
-				// guardo estado
+				// save the state
 				this.peerState.setPeer_choking(false);
 				System.out.println("Unchoke recibido");
 				break;
 
 			case 4: // have
-				// cambiar el bitfield del peer
+				// update the bitfield of the peer
 				int pieceNumber = ToolKit.bigEndianBytesToInt(
 						messageArray.get(i).getPayload(), 0);
 				peerState.getBitfield()[pieceNumber] = 1;
 				break;
 			case 5: // bitfield
-				// cambiar el bitfield del peer
+				// update the bitfield of the peer
 				byte[] payload = messageArray.get(i).getPayload();
 				peerState.setBitfield(payload);
 
 				break;
-
-			case 7: // piece
-
-				break;
-
 			default:
 
 				break;
-
 			}
 		}
 	}
 
+	/**
+	 * Make the fragment requests to the peer.
+	 */
 	private void request() {
 		FragmentsInformation fragmentInformation = this.torrent
 				.getFragmentsInformation();
 		while (!fragmentInformation.downloadFinished()&&!this.stop) {
 			boolean firstLap=true;
-			// comprobar siguiente subfragmento a descargar
+			// obtain the next subfragment to download
 			int[] pieceToAsk = fragmentInformation.pieceToAsk();
 			if (pieceToAsk != null) {
 				if(this.lastFragment<0){
 					lastFragment=pieceToAsk[0];
 				}else if(this.lastFragment<pieceToAsk[0]){
-					//si se a descargado todo el fragmento notificar que lo tenemos (mensaje have)
+					//if a complete fragment has been downloaded send the have message to the peer.
 					HaveMsg haveMessage=new HaveMsg(this.lastFragment);
 					try {
 						out.write(haveMessage.getBytes());
@@ -210,45 +224,43 @@ public class PeerConnection extends Thread {
 						
 						
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					this.lastFragment=pieceToAsk[0];
 				}
-				// comprobar que el peer contenga el fragmento
 				
+				// Test if the peer has the fragment.
 				if (firstLap||this.peerState.hasFragment(pieceToAsk[0])) {
-					// bloquear el fragmento
+					// block the subfragment to download
 					if (fragmentInformation.blockFragment(pieceToAsk[1])) {
 						firstLap=false;
 						try {
-							// descargar subfragmento
+							// download the fragment
 							RequestMsg requestMessage = new RequestMsg(pieceToAsk[0], pieceToAsk[1], pieceToAsk[2]);
 							byte[]response=this.sendMessage(requestMessage.getBytes());
-							//parsear respuesta
+							//parse the answer
 							PieceMsg piece=(PieceMsg)PeerProtocolMessage.parseMessage(response);
-							//añadir al array
+							//add the piece to the array
 							byte[]subfragment=ToolKit.subArray(piece.getPayload(), 8, piece.getPayload().length);
-							boolean notify=fragmentInformation.addPieceToArray(subfragment, pieceToAsk[1]);
+							fragmentInformation.addPieceToArray(subfragment, pieceToAsk[1]);
 							
 						}catch (Exception e) {
-							// si algo va mal desbloquear el subfragmento
+							// if something goes wrong unblock the fragment
 							fragmentInformation.unblockFragment(pieceToAsk[1]);
 							System.out.println("Subfragmento '" + pieceToAsk[1]
 									+ "' no descargado!");
 							e.printStackTrace();
-							//esperar
+							//wait
 							try {
 								Thread.sleep(100);
 							} catch (InterruptedException ex) {
-								// TODO Auto-generated catch block
 								ex.printStackTrace();
 							}
 						}
 					}
 
 				} else {
-					//esperar
+					//wait
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
@@ -257,18 +269,6 @@ public class PeerConnection extends Thread {
 					}
 				}
 			}
-		}
-
-	}
-
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		try {
-			connectToPeer();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 

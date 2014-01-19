@@ -3,6 +3,13 @@ package es.deusto.ingenieria.ssdd.bitTorrent.main;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+/**
+ * Thread that opens the tcp socket to get the peers requests
+ * and share the file with them.
+ * The method run opens the serverSocket and for each new incoming request opens a new thread
+ * that is going to manage the connection with each peer.
+ *
+ */
 public class Listener extends Thread {
 	private TorrentClient torrentClient;
 	
