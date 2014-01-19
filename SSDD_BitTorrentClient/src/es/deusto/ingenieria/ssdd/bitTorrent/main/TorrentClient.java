@@ -213,7 +213,7 @@ public class TorrentClient {
 				//System.out.println(response.toString());
 				break;
 			} catch (Exception e) {
-				System.out.println("Connection error to: " + announce);
+				//System.out.println("Connection error to: " + announce);
 
 			}
 		}
