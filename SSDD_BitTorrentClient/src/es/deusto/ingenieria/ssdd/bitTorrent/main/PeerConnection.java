@@ -192,7 +192,21 @@ public class PeerConnection extends Thread {
 				if(this.lastFragment<0){
 					lastFragment=pieceToAsk[0];
 				}else if(this.lastFragment<pieceToAsk[0]){
-					//si se a descargado todo el fragmento notificar que lo tenemos
+					//si se a descargado todo el fragmento notificar que lo tenemos (mensaje have)
+					HaveMsg haveMessage=new HaveMsg(this.lastFragment);
+					try {
+						out.write(haveMessage.getBytes());
+						System.out.println(" Have message sent to '"
+								+ tcpSocket.getInetAddress().getHostAddress() + ":"
+								+ tcpSocket.getPort() + "' -> Fragment: '" +this.lastFragment
+								+ "'");
+						
+						
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					this.lastFragment=pieceToAsk[0];
 				}
 				// comprobar que el peer contenga el fragmento
 				
