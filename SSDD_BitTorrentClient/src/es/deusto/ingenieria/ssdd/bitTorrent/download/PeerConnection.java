@@ -85,10 +85,10 @@ public class PeerConnection extends Thread {
 	 */
 	private byte[] sendMessage(byte[] message) {
 		try {
-			System.out.println(" - Sent data to '"
-					+ tcpSocket.getInetAddress().getHostAddress() + ":"
-					+ tcpSocket.getPort() + "' -> '" + new String(message)
-					+ "'");
+//			System.out.println(" - Sent data to '"
+//					+ tcpSocket.getInetAddress().getHostAddress() + ":"
+//					+ tcpSocket.getPort() + "' -> '" + new String(message)
+//					+ "'");
 			out.write(message);
 			
 			int cont=0;

@@ -24,7 +24,7 @@ public class Main {
 		String torrentFileName = reader.readLine();
 		
 		//String torrentFileName = "ALB   Golden Chains (feat. The Shoes).mp3.torrent";
-		TorrentClient torrent = new TorrentClient();
+		TorrentClient torrent = new TorrentClient(port);
 		torrent.downloadTorrent(torrentFileName);
 	}
 }

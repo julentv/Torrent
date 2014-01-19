@@ -34,9 +34,9 @@ public class TorrentClient {
 	private int subfragmentLength;
 	private int uploaded;
 
-	public TorrentClient() {
+	public TorrentClient(int port) {
 		this.peerId = ToolKit.generatePeerId();
-		this.port = 6666;
+		this.port = port;
 		this.peerStateList = new PeerStateList(new PeerState(this.ip,
 				this.port, 0));
 		this.interval = 0;
