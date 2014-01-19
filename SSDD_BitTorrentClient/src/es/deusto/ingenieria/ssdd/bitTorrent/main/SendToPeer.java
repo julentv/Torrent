@@ -112,12 +112,12 @@ public class SendToPeer extends Thread {
 			
 		}else if(message.getType().equals(PeerProtocolMessage.Type.REQUEST)){
 			//read the index
-		
+			System.out.println("Request recibido");
 			//leer pieza del fichero
 			FileManagement fm= new FileManagement(this.torrentClient.getMetainf().getInfo().getName(), this.torrentClient.getMetainf().getInfo().getLength());
 			int position=0;
 			position=(((RequestMsg) message).getIndex()*this.torrentClient.getFragmentsInformation().getFragmentLength())+((RequestMsg) message).getOffset();
-			if((position+((RequestMsg) message).getOffset())>this.torrentClient.getMetainf().getInfo().getLength()){
+			if((position+((RequestMsg) message).getOffset())<this.torrentClient.getMetainf().getInfo().getLength()){
 				
 				byte[]bytes=fm.readFromFile(position, ((RequestMsg) message).getPieceLength());
 				//send piece
