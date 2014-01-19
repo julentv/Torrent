@@ -11,6 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import es.deusto.ingenieria.ssdd.bitTorrent.file.FileManagement;
@@ -113,6 +115,13 @@ public class TorrentClient {
 					PeerConnection peerConnection = new PeerConnection(this,
 							this.peerStateList.get(0));
 					peerConnection.start();
+					
+					//send messages to the tracker periodically.
+					trackerUpdate();
+					
+					
+					
+					
 				}else{
 					System.out.println("Ya esta descargado.");
 				}
@@ -211,6 +220,36 @@ public class TorrentClient {
 		}
 		return result;
 
+	}
+	
+	public void trackerUpdate() throws IOException, InterruptedException{
+		while(true){
+			Thread.sleep(this.interval);
+			int downloaded=0;
+			if(this.fragmentsInformation.isCompleted()){
+				downloaded= this.metainf.getInfo().getLength();
+			}else{
+				downloaded= this.fragmentsInformation.getCurrentFragment()* this.metainf.getInfo().getPieceLength();
+			}
+			String trackerResponse = httprRequest(metainf, this.port, this.uploaded,
+					downloaded, this.metainf.getInfo().getLength()-downloaded);
+			System.out.println("Request sent to the Tracker. Response: "+trackerResponse);
+			// Parse the response
+			MetainfoStringHandler mih = new MetainfoStringHandler(
+					trackerResponse);
+			//update peer list
+			PeerStateList peerStateListAux=mih.getPeerStateArray(this.getNumberOfPieces(), new PeerState(this.ip, this.port, this.getNumberOfPieces()));
+			for(int i=0,ii=peerStateListAux.size();i<ii;i++){
+				PeerState peerStateAux=peerStateListAux.get(i);
+				if(this.peerStateList.add(peerStateAux)){
+					//throw new thread for the new peer
+					PeerConnection peerConnection = new PeerConnection(this, peerStateAux);
+					peerConnection.start();
+					System.out.println("______________________Nuevo hilo lanzado para el nuevo peer__________________________");
+				}
+			}
+		}
+		
 	}
 
 	public String getPeerId() {
